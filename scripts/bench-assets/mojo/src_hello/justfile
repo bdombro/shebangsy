@@ -1,0 +1,30 @@
+set shell := ["zsh", "-cu"]
+
+# Show the available tasks so contributors can quickly discover common workflows.
+# This makes the default just invocation a convenient discovery command.
+_:
+    @just --list
+
+clean:
+    rm -rf .pixi
+
+# Run the Mojo app through Pixi using the repository's default task wiring.
+# This is the primary entrypoint used by `just run`.
+run:
+    pixi run run
+
+# Build the Mojo app using the repository's default Pixi task wiring.
+# NOTE: It seems it's currently impossible to build a bin that is
+# untethered/independent of the src dir. If you move/del the src dir,
+# the bin will error.
+build: clean
+    pixi run mojo build main.mojo
+    cp main ../mojo_bin
+
+shell:
+    pixi shell
+
+# Run the Mojo entrypoint directly so the app can be exercised without the Pixi alias.
+run2:
+    pixi run mojo run main.mojo
+

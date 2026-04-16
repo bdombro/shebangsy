@@ -1,0 +1,46 @@
+Benchmark 1: /Users/briandombrowski/dev/bdombro/shebangsy/scripts/bench-assets/go/go_bin
+  Time (mean ± σ):       6.8 ms ±   1.5 ms    [User: 1.0 ms, System: 1.1 ms]
+  Range (min … max):     4.0 ms …  10.0 ms    20 runs
+ 
+Benchmark 2: /Users/briandombrowski/dev/bdombro/shebangsy/scripts/bench-assets/go/go_gorun.go
+  Time (mean ± σ):      15.9 ms ±   2.9 ms    [User: 2.5 ms, System: 2.9 ms]
+  Range (min … max):    10.8 ms …  20.7 ms    20 runs
+ 
+Benchmark 3: /Users/briandombrowski/dev/bdombro/shebangsy/scripts/bench-assets/go/go_scriptisto.go
+  Time (mean ± σ):      20.5 ms ±   2.1 ms    [User: 2.9 ms, System: 3.9 ms]
+  Range (min … max):    16.2 ms …  23.6 ms    20 runs
+ 
+Benchmark 4: /Users/briandombrowski/dev/bdombro/shebangsy/scripts/bench-assets/go/go_shebangsy.go
+  Time (mean ± σ):      18.8 ms ±   2.4 ms    [User: 2.9 ms, System: 3.4 ms]
+  Range (min … max):    15.0 ms …  24.9 ms    20 runs
+ 
+Benchmark 5: /Users/briandombrowski/dev/bdombro/shebangsy/scripts/bench-assets/mojo/mojo_bin
+  Time (mean ± σ):      11.5 ms ±   1.8 ms    [User: 4.1 ms, System: 2.1 ms]
+  Range (min … max):     8.9 ms …  17.0 ms    20 runs
+ 
+Benchmark 6: /Users/briandombrowski/dev/bdombro/shebangsy/scripts/bench-assets/mojo/mojo_shebangsy.mojo
+  Time (mean ± σ):      20.6 ms ±   2.5 ms    [User: 5.7 ms, System: 3.6 ms]
+  Range (min … max):    16.8 ms …  27.7 ms    20 runs
+ 
+Benchmark 7: /Users/briandombrowski/dev/bdombro/shebangsy/scripts/bench-assets/nim/nim_bin
+  Time (mean ± σ):       5.6 ms ±   1.2 ms    [User: 0.6 ms, System: 0.7 ms]
+  Range (min … max):     4.5 ms …  10.0 ms    20 runs
+ 
+Benchmark 8: /Users/briandombrowski/dev/bdombro/shebangsy/scripts/bench-assets/nim/nim_nimr.nim
+  Time (mean ± σ):     136.6 ms ±   4.1 ms    [User: 83.6 ms, System: 15.7 ms]
+  Range (min … max):   124.7 ms … 143.6 ms    20 runs
+ 
+Benchmark 9: /Users/briandombrowski/dev/bdombro/shebangsy/scripts/bench-assets/nim/nim_shebangsy.nim
+  Time (mean ± σ):      18.1 ms ±   2.3 ms    [User: 2.4 ms, System: 2.8 ms]
+  Range (min … max):    14.2 ms …  21.5 ms    20 runs
+ 
+Summary
+  /Users/briandombrowski/dev/bdombro/shebangsy/scripts/bench-assets/nim/nim_bin ran
+    1.21 ± 0.38 times faster than /Users/briandombrowski/dev/bdombro/shebangsy/scripts/bench-assets/go/go_bin
+    2.04 ± 0.55 times faster than /Users/briandombrowski/dev/bdombro/shebangsy/scripts/bench-assets/mojo/mojo_bin
+    2.83 ± 0.80 times faster than /Users/briandombrowski/dev/bdombro/shebangsy/scripts/bench-assets/go/go_gorun.go
+    3.22 ± 0.81 times faster than /Users/briandombrowski/dev/bdombro/shebangsy/scripts/bench-assets/nim/nim_shebangsy.nim
+    3.35 ± 0.85 times faster than /Users/briandombrowski/dev/bdombro/shebangsy/scripts/bench-assets/go/go_shebangsy.go
+    3.65 ± 0.88 times faster than /Users/briandombrowski/dev/bdombro/shebangsy/scripts/bench-assets/go/go_scriptisto.go
+    3.66 ± 0.91 times faster than /Users/briandombrowski/dev/bdombro/shebangsy/scripts/bench-assets/mojo/mojo_shebangsy.mojo
+   24.31 ± 5.36 times faster than /Users/briandombrowski/dev/bdombro/shebangsy/scripts/bench-assets/nim/nim_nimr.nim

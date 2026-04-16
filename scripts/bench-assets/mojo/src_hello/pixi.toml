@@ -1,0 +1,12 @@
+[workspace]
+authors = ["Brian Dombrowski <bdombro@gmail.com>"]
+channels = ["https://conda.modular.com/max-nightly", "conda-forge"]
+name = "hello-world"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+
+[tasks]
+run = "mojo run main.mojo"
+
+[dependencies]
+mojo = ">=0.26.3.0.dev2026041405,<0.27"
