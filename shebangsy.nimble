@@ -8,4 +8,3 @@ binDir = "dist"
 bin = @["shebangsy"]
 
 requires "nim >= 2.0.0"
-requires "argsbarg >= 2.0.0"

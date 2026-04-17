@@ -38,11 +38,6 @@ flowchart TD
 import std/[options, os, strutils]
 import ../languages_common
 
-## Clears the global shebangsy cache (SwiftPM workspace lives under it).
-proc swiftCacheClear(): int =
-  cacheClear()
-
-
 ## True for ASCII letters, digits, and underscore (Swift identifier continuation after ``@main``).
 proc swiftCharIsIdentTail(c: char): bool =
   c in {'a'..'z', 'A'..'Z', '0'..'9', '_'}
@@ -428,7 +423,6 @@ proc swiftExecTupleForBinary*(binaryPath: string; scriptArgs: seq[string]): Exec
 proc createRunner*(): LanguageRunner =
   LanguageRunner(
     aliases: @[],
-    clearProc: swiftCacheClear,
     compileProc: swiftCompile,
     description:
       "Swift scripts: swiftc or SwiftPM; adds -parse-as-library when source has @main",

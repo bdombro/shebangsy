@@ -1,8 +1,8 @@
 # Benchmark report
 
-Generated from [`benches.jsonl`](./benches.jsonl) (13 run(s)).
+Generated from [`benches.jsonl`](./benches.jsonl) (5 run(s)).
 
-**Latest run:** `time=1776443886` · **CPU:** Apple M4 Pro
+**Latest run:** `time=1776445495` · **CPU:** Apple M4 Pro
 
 ## Overhead vs `bin` over time
 
@@ -27,15 +27,15 @@ config:
 ---
 xychart-beta
     title "Overhead vs bin: script ms minus lang/bin (lower is better)"
-    x-axis ["#1 04-17 16:08", "#2 04-17 16:09", "#3 04-17 16:10", "#4 04-17 16:20", "#5 04-17 16:26", "#6 04-17 16:29", "#7 04-17 16:46", "#8 04-17 16:47", "#9 04-17 16:47", "#10 04-17 16:48", "#11 04-17 16:50", "#12 04-17 17:04", "#13 04-17 17:38"]
-    y-axis "overhead ms" 5 --> 16
-    line [12.4, 11.8, 11.0, 12.0, 10.9, 11.0, 9.2, 6.8, 6.9, 10.3, 10.7, 8.2, 11.1]
-    line [11.7, 9.3, 11.3, 8.6, 12.1, 10.5, 9.1, 8.6, 7.1, 7.8, 10.2, 8.3, 11.5]
-    line [8.9, 9.7, 11.5, 9.5, 9.1, 9.9, 9.6, 8.8, 8.5, 9.1, 9.3, 7.8, 12.3]
-    line [10.2, 10.1, 12.4, 10.1, 10.5, 10.0, 11.0, 8.2, 6.2, 9.2, 10.0, 8.1, 12.1]
-    line [12.6, 12.1, 11.6, 10.8, 11.6, 12.8, 11.3, 9.7, 6.5, 9.7, 11.8, 9.7, 14.2]
-    line [9.1, 12.5, 9.7, 11.6, 10.1, 10.5, 11.0, 8.5, 7.7, 8.3, 8.6, 8.2, 12.3]
-    line [9.3, 10.5, 9.0, 9.0, 9.0, 9.0, 10.4, 8.6, 7.2, 9.9, 10.8, 7.6, 11.0]
+    x-axis ["#1 04-17 16:08", "#2 04-17 17:57", "#3 04-17 18:00", "#4 04-17 18:03", "#5 04-17 18:04"]
+    y-axis "overhead ms" 7 --> 15
+    line [12.4, 9.9, 10.1, 11.2, 13.7]
+    line [11.7, 11.9, 10.2, 9.9, 10.9]
+    line [8.9, 11.6, 9.2, 10.7, 11.0]
+    line [10.2, 11.6, 10.2, 11.8, 11.8]
+    line [12.6, 13.3, 11.2, 10.8, 13.2]
+    line [9.1, 11.9, 7.9, 12.3, 12.3]
+    line [9.3, 10.2, 9.3, 10.3, 12.6]
 ```
 
 ## Absolute time (ms) - most recent run
@@ -63,7 +63,7 @@ xychart-beta horizontal
     title "Latest run — mean time (ms) per app"
     x-axis ["cpp/bin", "cpp/shebangsy.cpp", "go/bin", "go/shebangsy.go", "go/gorun.go", "go/scriptisto.go", "mojo/bin", "mojo/shebangsy.mojo", "nim/bin", "nim/shebangsy.nim", "python/bin", "python/shebangsy.py", "python/uv.py", "rust/bin", "rust/shebangsy.rs", "swift/bin", "swift/shebangsy.swift", "swift/swift_sh.swift"]
     y-axis "ms" 0 --> 80
-    bar [5.4, 16.5, 6.5, 18.0, 20.0, 21.2, 10.7, 23.0, 6.1, 18.2, 16.4, 30.6, 56.4, 6.2, 18.5, 6.8, 17.8, 80.0]
+    bar [6.4, 20.1, 7.8, 18.7, 20.4, 20.8, 11.0, 22.0, 6.8, 18.6, 16.9, 30.1, 56.1, 6.8, 19.1, 7.2, 19.8, 80.0]
 ```
 
 ## Absolute time (ms) — mean of all runs
@@ -91,7 +91,7 @@ xychart-beta horizontal
     title "Mean time (ms) per app — all time"
     x-axis ["cpp/bin", "cpp/shebangsy.cpp", "go/bin", "go/shebangsy.go", "go/gorun.go", "go/scriptisto.go", "mojo/bin", "mojo/shebangsy.mojo", "nim/bin", "nim/shebangsy.nim", "python/bin", "python/shebangsy.py", "python/uv.py", "rust/bin", "rust/shebangsy.rs", "swift/bin", "swift/shebangsy.swift", "swift/swift_sh.swift"]
     y-axis "ms" 0 --> 80
-    bar [5.4, 15.6, 6.3, 16.0, 17.7, 18.4, 10.1, 19.6, 5.2, 15.0, 16.5, 27.6, 53.7, 5.6, 15.5, 5.9, 15.3, 80.0]
+    bar [5.7, 17.2, 7.0, 17.9, 19.1, 19.1, 10.6, 20.9, 5.9, 17.0, 16.7, 28.9, 55.2, 5.9, 16.6, 6.3, 16.7, 80.0]
 ```
 
 ## Overhead vs `bin` (shebangsy only)
@@ -121,7 +121,7 @@ xychart-beta horizontal
     title "Latest run — overhead vs bin (shebangsy only, lower is better)"
     x-axis ["cpp/shebangsy.cpp", "go/shebangsy.go", "mojo/shebangsy.mojo", "nim/shebangsy.nim", "python/shebangsy.py", "rust/shebangsy.rs", "swift/shebangsy.swift"]
     y-axis "overhead ms" 10 --> 15
-    bar [11.1, 11.5, 12.3, 12.1, 14.2, 12.3, 11.0]
+    bar [13.7, 10.9, 11.0, 11.8, 13.2, 12.3, 12.6]
 ```
 
 ## Overhead vs `bin` — mean of all runs (shebangsy only)
@@ -146,8 +146,8 @@ config:
       yAxisTickColor: "#5c6370"
 ---
 xychart-beta horizontal
-    title "Mean overhead vs bin — all 13 run(s), shebangsy only (lower is better)"
+    title "Mean overhead vs bin — all 5 run(s), shebangsy only (lower is better)"
     x-axis ["cpp/shebangsy.cpp", "go/shebangsy.go", "mojo/shebangsy.mojo", "nim/shebangsy.nim", "python/shebangsy.py", "rust/shebangsy.rs", "swift/shebangsy.swift"]
-    y-axis "overhead ms" 8 --> 12
-    bar [10.2, 9.7, 9.5, 9.9, 11.1, 9.9, 9.4]
+    y-axis "overhead ms" 9 --> 13
+    bar [11.5, 10.9, 10.3, 11.1, 12.2, 10.7, 10.3]
 ```

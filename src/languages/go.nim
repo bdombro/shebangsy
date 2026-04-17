@@ -30,11 +30,6 @@ import std/[os, strutils]
 import ../languages_common
 
 
-## Removes the global shebangsy cache (shared with other languages).
-proc goCacheClear(): int =
-  cacheClear()
-
-
 ## Stages the script under ``cacheShadowDirFromBinary``, runs ``go get`` for ``#!requires:``,
 ## and builds to ``binaryPath``.
 proc goCompile*(scriptAbs, binaryPath: string): int =
@@ -99,7 +94,6 @@ proc goExecTupleForBinary*(binaryPath: string; scriptArgs: seq[string]): ExecTup
 proc createRunner*(): LanguageRunner =
   LanguageRunner(
     aliases: @["golang"],
-    clearProc: goCacheClear,
     compileProc: goCompile,
     description: "Compile and run Go scripts",
     execProc: goExecTupleForBinary,

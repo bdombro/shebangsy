@@ -1,22 +1,37 @@
-# shebangsy
+```
+   /$$ /$$   /$$                    
+  / $$/ $$  | $$                    
+ /$$$$$$$$$$| $$  /$$$$$$$ /$$   /$$
+|   $$  $$_/| $$ /$$_____/| $$  | $$
+ /$$$$$$$$$$|__/|  $$$$$$ | $$  | $$
+|_  $$  $$_/     \____  $$| $$  | $$
+  | $$| $$   /$$ /$$$$$$$/|  $$$$$$$
+  |__/|__/  |__/|_______/  \____  $$
+                           /$$  | $$
+                          |  $$$$$$/
+                           \______/ 
+```
+<!-- Big money NE - https://patorjk.com/software/taag/#p=testall&f=Bulbhead&t=shebangsy&x=none&v=4&h=4&w=80&we=false> -->
 
-Single-file script runner for **cpp, Go, Mojo, Nim, Python3, Rust, and Swift**. Write a shebang, `chmod +x`, and run. Automatic compilation and caching skip rebuilds when the source hasn't changed.
+# Shebangsy
 
-**Optimized for Speed:** Using shebangsy vs running a pre-compiled bin is ~10ms penalty -- low enough for snappy shell completions
+**Shebangsy** (also written `#!sy`) runs single-file scripts in **C++, Go, Mojo, Nim, Python 3, Rust, and Swift**. You add a shebang, mark the file executable, and run it like any other program. Dependencies and build flags live in small `#!` directives at the top of the file, so you can pin versions without maintaining a separate project tree for every script.
 
-**Optimized for Easy:** Each language uses the same frontmatter syntax for dep pinning
+On a warm cache hit, overhead versus a pre-built binary is on the order of **~10 ms**—enough for interactive use, including shell completions.
 
-**Supported platforms:** macOS and Linux (POSIX). Windows is not supported.
+**Platforms:** macOS and Linux (POSIX). Windows is not supported.
 
----
+## How it works
+
+The first time you run a script, shebangsy compiles (or materializes) it into a cache under `~/.cache/shebangsy`. Later runs compare the source file’s **size and modification time** to that cache entry. If nothing changed, the cached artifact runs immediately; if the file changed, shebangsy rebuilds. Directive lines (`#!requires:`, `#!flags:`) are stripped before the compiler sees the source.
 
 ## Quick start
 
 1. Put **`shebangsy` on your `PATH`** (see [Install](#install)).
-2. Start your script with `#!/usr/bin/env -S shebangsy <language>`.
-3. `chmod +x` and run it.
+2. Start the file with `#!/usr/bin/env -S shebangsy <language>`.
+3. Run `chmod +x` on the script and execute it.
 
-Example for a `gonum-hello.go`
+Example: save as `gonum-hello.go`, then run it.
 
 ```go
 #!/usr/bin/env -S shebangsy go
@@ -37,70 +52,60 @@ func main() {
 ```
 
 ```sh
-chmod +x hello-go
-./hello-go   # compiles (first run), prints "hello from go"
-./hello-go   # warm cache hit, just runs the binary
+chmod +x gonum-hello.go
+./gonum-hello.go   # first run: compile, then execute
+./gonum-hello.go   # warm cache: run cached binary
 ```
 
-See [examples](./examples) for more.
-
----
+More samples live under [`examples/`](./examples).
 
 ## Command line
 
-You can also compile+run an app with shebangsy without the shebang by using the command line interface:
+Without a shebang, you can invoke the same pipeline explicitly:
 
 ```text
 shebangsy <language> <script> [...script args]
 ```
 
----
-
 ## Install
 
-**From a clone** (builds, installs to `~/.nimble/bin/shebangsy`, writes zsh completion):
+From a clone of this repository:
 
 ```sh
 just install
 # or: ./scripts/install.sh
 ```
 
----
+That builds with Nimble and installs **`shebangsy`** to **`~/.nimble/bin`**. Ensure that directory is on your **`PATH`** before running.
 
-## Build
-
-```sh
-just build
-# or: ./scripts/build.sh
-```
-
-Cross-compiled zips (macOS host + Linux glibc) land in `dist/`:
+Pre-built archives (macOS host and Linux glibc) are produced under **`dist/`** when you run:
 
 ```sh
 just build-cross
 # or: ./scripts/build-cross.sh
 ```
 
----
+The install script also clears existing cache files under `~/.cache/shebangsy` after a successful install.
 
-## Test
+## Cache
+
+Artifacts and shared workspaces live under **`~/.cache/shebangsy`**. You normally do not need to touch this directory; changing the script’s size or mtime invalidates its entry.
+
+**When to clear manually:** For example, after changing Swift dependency versions in a shared SwiftPM workspace, or if you want a completely clean slate, remove the cache directory:
 
 ```sh
-just test
-# or: ./scripts/test.sh
+rm -rf ~/.cache/shebangsy
 ```
 
-Runs smoke tests for each language (Mojo, cpp, Rust, Swift, and Python3 are skipped if their toolchains are unavailable).
-
----
+There is no separate `cache-clear` subcommand; deleting that path is the supported reset.
 
 ## Benchmark
 
 ### Results
 
-Below is a chart showing the mean completion times for "hello" apps over several runs of the benchmark. This chart is helpful to understand the overhead/penalty of using shebangsy (or alternatives) vs running a bin/script directly using `./{bin}` or `python3 {script}`.
+Mean end-to-end time for small “hello” style programs, averaged over benchmark runs. The chart compares shebangsy to running a compiled `bin` in the same language and to other runners where applicable.
 
-TL;DR - shebangsy is as good or better than alternatives at ~10ms cost.
+In short, shebangsy is in the same ballpark as alternatives, with roughly **~10 ms** overhead versus a direct binary on warm paths.
 
 ```mermaid
 ---
@@ -123,58 +128,67 @@ xychart-beta horizontal
     title "Mean time (ms) per app — all time"
     x-axis ["cpp/bin", "cpp/shebangsy.cpp", "go/bin", "go/shebangsy.go", "go/gorun.go", "go/scriptisto.go", "mojo/bin", "mojo/shebangsy.mojo", "nim/bin", "nim/shebangsy.nim", "python/bin", "python/shebangsy.py", "python/uv.py", "rust/bin", "rust/shebangsy.rs", "swift/bin", "swift/shebangsy.swift", "swift/swift_sh.swift"]
     y-axis "ms" 0 --> 80
-    bar [5.4, 15.6, 6.3, 16.0, 17.7, 18.4, 10.1, 19.6, 5.2, 15.0, 16.5, 27.6, 53.7, 5.6, 15.5, 5.9, 15.3, 80.0]
+    bar [5.7, 17.2, 7.0, 17.9, 19.1, 19.1, 10.6, 20.9, 5.9, 17.0, 16.7, 28.9, 55.2, 5.9, 16.6, 6.3, 16.7, 80.0]
 ```
 
-### Running the Benchmark
+### Running the benchmark
 
 ```sh
 just bench
 # or: ./scripts/bench.py
 ```
 
+See [`benches-report.md`](./benches-report.md) for additional charts.
 
 ---
 
-## Languages
+## Language reference
 
-Directives are read from the **first 40 lines** of the script (after the shebang). Lines starting with `#!requires:` and `#!flags:` are stripped before compile; **comma-separated** package tokens on one `#!requires:` line are split on commas (Rust additionally supports commas **inside** `@features=[…]`). **Multiple** `#!requires:` / `#!flags:` lines are merged in order. They apply on compile and stay cached until the source file’s size or mtime changes.
+Directives are read from the **first 40 lines** of the script (after the shebang line).
 
-### cpp
+- **`#!requires:`** — dependency specs (meaning varies by language).
+- **`#!flags:`** — extra arguments passed to the language’s build tool where supported.
 
-Uses a **shared** CMake workspace at **`~/.cache/shebangsy/cpp-workspace/`** (not per-script `binaryPath.project`). Only **`cli11`** is supported in `#!requires:`. **`#!flags:`** tokens are appended to the **`cmake -S … -B …`** configure invocation (after `-DCMAKE_BUILD_TYPE=Release`).
+Lines matching these prefixes are **removed** before compile. On a single `#!requires:` line, package tokens are **comma-separated** (Rust allows commas inside `@features=[…]`). You may repeat `#!requires:` and `#!flags:` lines; they are merged in order.
 
-#### Dependencies directives (`#!requires:`)
+### C++
+
+```cpp
+#!/usr/bin/env -S shebangsy cpp
+```
+
+**Dependencies (`#!requires:`):** Only **CLI11** is supported.
 
 ```cpp
 #!requires: cli11
 #!requires: cli11@2.4.1
 ```
 
-- Omitting `@version` defaults CLI11 to **2.4.1** (git tag is normalized with a `v` prefix when needed).
-- Any other package name is rejected at compile time.
+If you omit `@version`, CLI11 defaults to **2.4.1**. Any other package name is rejected.
 
-#### Flags (`#!flags:`)
+**Flags (`#!flags:`):** Passed through to **CMake** configure (after `-DCMAKE_BUILD_TYPE=Release`).
 
 ```cpp
 #!flags: -GNinja
 #!flags: -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 ```
 
+C++ builds use a **shared CMake workspace** under `~/.cache/shebangsy/cpp-workspace/`.
+
 ### Go
 
-The module is built under **`cacheShadowDirFromBinary(binaryPath)`** (next to the cached binary); the tree is **removed and recreated** at each compile so `go mod init` always runs on a clean `go.mod`. Each `#!requires:` token must be a **single** module path token (no spaces); `go get` is run per token.
+```go
+#!/usr/bin/env -S shebangsy go
+```
 
-#### Dependencies directives (`#!requires:`)
+**Dependencies (`#!requires:`):** One module path per token (no spaces), with a version suffix as with `go get`:
 
 ```go
 #!requires: github.com/charmbracelet/lipgloss@latest
 #!requires: github.com/spf13/cobra@v1.8.0
 ```
 
-- Full module path with `.` or `/`; include a version suffix such as `@latest` or `@v1.8.0` as you would with `go get`.
-
-#### Flags (`#!flags:`)
+**Flags (`#!flags:`):** Appended to **`go build`** (for example `-tags=…`, `-ldflags=…`).
 
 ```go
 #!flags: -tags=integration
@@ -182,13 +196,15 @@ The module is built under **`cacheShadowDirFromBinary(binaryPath)`** (next to th
 #!flags: -tags=netgo -ldflags=-w
 ```
 
-- Tokens are appended to `go build` after the default arguments (before `-o` and the staged `main.go`).
+Each compile uses a fresh module layout so dependency resolution stays predictable.
 
 ### Mojo
 
-`#!requires:` entries become **PyPI** dependencies in the Pixi manifest (Mojo itself is always included). **`#!flags:`** is not read by the Mojo backend.
+```text
+#!/usr/bin/env -S shebangsy mojo
+```
 
-#### Dependencies directives (`#!requires:`)
+**Dependencies (`#!requires:`):** PyPI-style names, pinned with `@version` when you need an exact release. Mojo itself is always included.
 
 ```text
 #!requires: numpy
@@ -196,29 +212,22 @@ The module is built under **`cacheShadowDirFromBinary(binaryPath)`** (next to th
 #!requires: numpy,scipy
 ```
 
-- `name` or `name@version` (`@version` becomes a `==` pin in `pixi.toml`).
-
-#### Flags (`#!flags:`)
-
-Not supported.
+**Flags (`#!flags:`):** Not supported.
 
 ### Nim
 
-Nimble installs missing packages and passes `--path:…` into `nim c`. If a `pixi.toml` exists **above the original script path**, compilation uses `pixi run nim c` instead of `nim` directly.
+```nim
+#!/usr/bin/env -S shebangsy nim
+```
 
-If the `.nim` basename is not a valid module name, or it would **shadow** a package you import from `#!requires:` (e.g. a file named `argsbarg.nim` while requiring `argsbarg`), the source is staged under the per-cache **shadow** directory `binaryPath & ".project"`; see [examples/nim/greet_demo.nim](examples/nim/greet_demo.nim).
-
-#### Dependencies directives (`#!requires:`)
+**Dependencies (`#!requires:`):** Comma-separated Nimble packages; optional `name@version`.
 
 ```nim
 #!requires: neo
 #!requires: neo,argsbarg@2.0.0
 ```
 
-- One or more Nimble package names on a line, **comma-separated**.
-- Optional version: `name@version` (Nimble spec).
-
-#### Flags (`#!flags:`)
+**Flags (`#!flags:`):** Whitespace-separated tokens appended to **`nim c`** (for example `--mm:refc`, `-d:release`).
 
 ```nim
 #!flags: --mm:refc -d:danger
@@ -226,13 +235,19 @@ If the `.nim` basename is not a valid module name, or it would **shadow** a pack
 #!flags: --threads:on
 ```
 
-- **Whitespace-separated** tokens; each line’s tokens are appended in order.
+If a `pixi.toml` exists **above** your script path, compilation runs via **`pixi run nim c`** instead of `nim` directly.
 
-### Python3
+If your filename is not a valid Nim module name, or it would **shadow** a package you import from `#!requires:`, see [`examples/nim/greet_demo.nim`](examples/nim/greet_demo.nim) for a working pattern.
 
-CLI token **`python3`**; alias **`python`**. The script body is written to the cache artifact path; an isolated **`.venv`** lives under **`binaryPath & ".project"`**. Each `#!requires:` token is passed to **`python -m pip install <token>`** inside that venv (any form `pip` accepts: plain name, `pkg==1.2.3`, `pkg>=2`, extras, etc.).
+### Python 3
 
-#### Dependencies directives (`#!requires:`)
+```python
+#!/usr/bin/env -S shebangsy python3
+```
+
+Use the **`python3`** token on the shebang; **`python`** is an alias (same runner).
+
+**Dependencies (`#!requires:`):** Each token is installed with **`pip`** inside an isolated **`.venv`** for that cache key (any form `pip` accepts).
 
 ```python
 #!requires: requests
@@ -241,15 +256,15 @@ CLI token **`python3`**; alias **`python`**. The script body is written to the c
 #!requires: requests[security],httpx==0.27.0
 ```
 
-#### Flags (`#!flags:`)
-
-Not supported; lines are ignored.
+**Flags (`#!flags:`):** Not supported (ignored).
 
 ### Rust
 
-Crate graph is generated under **`cacheShadowDirFromBinary(binaryPath)`** (Cargo project). `#!requires:` uses Rust’s own **bracket-aware** comma splitting so feature lists can contain commas.
+```rust
+#!/usr/bin/env -S shebangsy rust
+```
 
-#### Dependencies directives (`#!requires:`)
+**Dependencies (`#!requires:`):** Comma splitting is bracket-aware so feature lists can contain commas.
 
 ```rust
 #!requires: serde
@@ -259,22 +274,28 @@ Crate graph is generated under **`cacheShadowDirFromBinary(binaryPath)`** (Cargo
 #!requires: clap@4@features=[derive,env]
 ```
 
-- `crate`, `crate@version`, or `crate@version@features=[f1,f2]` (version may be `*`).
+Forms: `crate`, `crate@version`, or `crate@version@features=[…]` (version may be `*`).
 
-#### Flags (`#!flags:`)
+**Flags (`#!flags:`):** Appended to **`cargo build --release`**.
 
 ```rust
 #!flags: --locked
 #!flags: -Ztimings=html
 ```
 
-- Tokens are appended to **`cargo build --release`**.
-
 ### Swift
 
-**No `#!requires:`** → **`swiftc -O`** (sidecar source under `binaryPath & ".project"`, removed after compile). **With `#!requires:`** → shared SwiftPM tree at **`~/.cache/shebangsy/swift-workspace/`**; dependencies **accumulate** in `Package.swift` until **`shebangsy cache-clear`**. If the workspace `Package.swift` has no `platforms:` block yet, shebangsy inserts **high minimum OS versions** so current Swift APIs compile (adjust in `swift.nim` if you need different floors). Each token must include **`@version`**; optional **`:`product** after the version for unknown URLs/repos. Bump a package version already in the manifest by clearing the cache first. Cold compiles with deps may hit the network.
+```swift
+#!/usr/bin/env -S shebangsy swift
+```
 
-#### Dependencies directives (`#!requires:`)
+**Without `#!requires:`:** Single-file **`swiftc -O`** builds.
+
+**With `#!requires:`:** Dependencies are resolved through a **shared SwiftPM workspace** under `~/.cache/shebangsy/swift-workspace/`. Entries **accumulate** in the workspace manifest until you clear the cache (see [Cache](#cache)). Each token must include **`@version`**. For `owner/repo` URLs shebangsy cannot infer, add **`:ProductName`** after the version. First-time builds with dependencies may hit the network.
+
+If the workspace has no `platforms:` block yet, shebangsy may insert **high minimum OS versions** so current Swift APIs compile; adjust in source if you need different deployment targets.
+
+#### Dependencies (`#!requires:`)
 
 ```swift
 #!requires: swift-argument-parser@1.3.0
@@ -283,22 +304,20 @@ Crate graph is generated under **`cacheShadowDirFromBinary(binaryPath)`** (Cargo
 #!requires: owner/Repo@2.0.0:ProductName
 ```
 
-- Shorthand / `owner/repo` / full `https://…` forms; unknown `owner/repo` needs **`:ProductName`** after the version.
-
 #### Flags (`#!flags:`)
 
 ```swift
 #!flags: -warnings-as-errors
 ```
 
-- With **no** `#!requires:`: appended to **`swiftc`** (with `-parse-as-library` injected automatically when `@main` is detected, unless already present in flags).
-- With **`#!requires:`**: appended to **`swift build -c release`** (and wrapped for SwiftPM where applicable).
+- **No** `#!requires:`: flags go to **`swiftc`** (shebangsy may add `-parse-as-library` when it detects `@main`, unless you already set it).
+- **With** `#!requires:`: flags go to **`swift build -c release`**.
 
 ---
 
 ## Editor tips (VS Code / Cursor)
 
-For syntax highlighting on files without extension, install
+For syntax highlighting on extensionless scripts, install
 [Shebang Language Associator](https://marketplace.visualstudio.com/items?itemName=davidhewitt.shebang-language-associator)
 and add:
 
@@ -335,9 +354,38 @@ and add:
   ]
 ```
 
----
+## Build
+
+```sh
+just build
+# or: ./scripts/build.sh
+```
+
+Cross-compiled zips (macOS host + Linux glibc) land in `dist/`:
+
+```sh
+just build-cross
+# or: ./scripts/build-cross.sh
+```
+
+## Test
+
+```sh
+just test
+# or: ./scripts/test.sh
+```
+
+Smoke tests cover each language backend; Mojo, C++, Rust, Swift, and Python 3 are skipped automatically when the corresponding toolchain is missing.
+
+## Contributing
+
+Issues and pull requests are welcome. To work locally:
+
+1. **Build:** `just build` (or `./scripts/build.sh`).
+2. **Test:** `just test` (or `./scripts/test.sh`).
+
+Follow existing style in the Nim sources under `src/`. The project is POSIX-only.
 
 ## License
 
 MIT
-

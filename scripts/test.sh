@@ -33,7 +33,7 @@ run_lang_test() {
   [[ "${before}" == "${after}" ]] || fail "warm ${lang} run created a new binary (${before} -> ${after})"
 }
 
-"${BIN}" cache-clear
+rm -rf "${HOME}/.cache/shebangsy"
 
 if command -v nim >/dev/null 2>&1 && nim --version >/dev/null 2>&1; then
   run_lang_test nim ./examples/nim/hello.nim

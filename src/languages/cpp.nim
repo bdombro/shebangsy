@@ -30,11 +30,6 @@ flowchart TD
 import std/[os, strutils]
 import ../languages_common
 
-## Removes the global shebangsy cache (CMake workspace lives under it).
-proc cppCacheClear(): int =
-  cacheClear()
-
-
 ## Normalizes a CLI11 version string to a ``v``-prefixed git tag when missing.
 proc cli11GitTagNormalize(ver: string): string =
   let v = ver.strip
@@ -166,7 +161,6 @@ proc cppExecTupleForBinary*(binaryPath: string; scriptArgs: seq[string]): ExecTu
 proc createRunner*(): LanguageRunner =
   LanguageRunner(
     aliases: @[],
-    clearProc: cppCacheClear,
     compileProc: cppCompile,
     description: "Compile and run cpp scripts via CMake",
     execProc: cppExecTupleForBinary,
