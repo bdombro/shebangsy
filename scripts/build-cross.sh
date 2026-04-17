@@ -27,9 +27,11 @@ require_zig() {
 zig_cc_wrapper_path() {
   local tmp_dir="$1" zig_target="$2" wrapper
   wrapper="${tmp_dir}/zig-cc-${zig_target//[^a-zA-Z0-9_-]/_}"
+  # Use \$@ so the wrapper file keeps literal "$@" for sh at runtime. Unquoted <<EOF
+  # would expand "$@" here (to this function's args: tmp_dir zig_target) and break zig.
   cat >"${wrapper}" <<EOF
 #!/usr/bin/env sh
-exec zig cc -target ${zig_target} "$@"
+exec zig cc -target ${zig_target} "\$@"
 EOF
   chmod +x "${wrapper}"
   printf '%s' "${wrapper}"
@@ -75,7 +77,7 @@ main() {
   mkdir -p "${dist_dir}"
   cd "${ROOT_DIR}"
 
-  local tmp_dir
+  # Not local: EXIT trap runs after main returns, so locals would be out of scope (set -u).
   tmp_dir="$(mktemp -d)"
   trap 'rm -rf -- "${tmp_dir}"' EXIT
 

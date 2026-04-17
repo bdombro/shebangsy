@@ -6,7 +6,7 @@ Goal: be the single file an author edits to register a new language backend; she
 
 Why: decoupling the entry point from language modules means adding a language is a
   one-line change here (add createRunner() to registryAll), with no edits needed to
-  the hot path or CLI wiring.
+  the hot path or binary argv handling in shebangsy.nim.
 
 How: registryAll() calls createRunner() on each language module in priority order.
   registryByToken() builds the token lookup table from that list.

@@ -29,11 +29,6 @@ flowchart TD
 import std/[os, strutils]
 import ../languages_common
 
-## Clears the global shebangsy cache.
-proc rustCacheClear(): int =
-  cacheClear()
-
-
 ## Splits on commas outside of ``[...]`` (for ``@features=[a,b]`` in requires lines).
 proc bracketAwareCommaSplit(s: string): seq[string] =
   var depth = 0
@@ -219,7 +214,6 @@ proc rustExecTupleForBinary*(binaryPath: string; scriptArgs: seq[string]): ExecT
 proc createRunner*(): LanguageRunner =
   LanguageRunner(
     aliases: @["rs"],
-    clearProc: rustCacheClear,
     compileProc: rustCompile,
     description: "Compile and run Rust scripts via Cargo",
     execProc: rustExecTupleForBinary,

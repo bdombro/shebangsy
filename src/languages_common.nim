@@ -7,7 +7,7 @@ Goal: give every language backend the types, filesystem helpers, and process uti
 Why: the cache-keying strategy (mtime + size → unique binary path), the flock-based
   compile guard, and the execv warm-path are identical across all language backends.
   Centralising them here avoids duplication and makes the contract between shebangsy.nim
-  and each backend explicit via the ClearProc / CompileProc / ExecProc type aliases.
+  and each backend explicit via the CompileProc / ExecProc type aliases.
 
 How:
   - Types: LanguageRunner, FrontmatterDirectives, and the proc-type aliases used across
@@ -65,9 +65,6 @@ type
     ## Comma-separated package specs from ``#!requires:`` lines.
     requires*: seq[string]
 
-  ## Clears this language’s cache subtree; returns process exit code style (0 = ok).
-  ClearProc* = proc(): int {.nimcall.}
-
   ## Compiles ``scriptAbs`` to ``binaryPath``; returns 0 on success.
   CompileProc* = proc(scriptAbs, binaryPath: string): int {.nimcall.}
 
@@ -78,11 +75,10 @@ type
   ExecProc* = proc(binaryPath: string; scriptArgs: seq[string]): ExecTuple {.nimcall.}
 
   LanguageRunner* = object
-    ## Extra CLI tokens that select this runner (e.g. ``golang``).
+    ## Extra argv tokens that select this runner (e.g. ``golang``).
     aliases*: seq[string]
-    clearProc*: ClearProc
     compileProc*: CompileProc
-    ## Short text for ``--help`` listings.
+    ## Short human-readable label for this runner (logging, docs, future tooling).
     description*: string
     execProc*: ExecProc
     ## Primary language token (e.g. ``go``).
@@ -294,7 +290,8 @@ proc cacheScriptBinaryEnsure*(scriptPath: string;
   result = (binaryPath, true, 0)
 
 
-## Removes the entire shebangsy cache root directory.
+## Removes the entire shebangsy cache root directory (library helper; the binary does
+## not expose a cache-clear command—users typically ``rm -rf ~/.cache/shebangsy``).
 proc cacheClear*(): int =
   let dir = cacheRootDirGet()
   if not dirExists(dir):

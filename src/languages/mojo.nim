@@ -51,11 +51,6 @@ proc posixClose(fd: cint): cint {.importc: "close", header: "<unistd.h>", sideEf
 const LOCK_EX = 2.cint
 
 
-## Clears the global shebangsy cache.
-proc mojoCacheClear(): int =
-  cacheClear()
-
-
 ## ``#!requires:`` PyPI-style specs from the script front matter.
 proc mojoRequiresFromSource(content: string): seq[string] =
   frontmatterDirectivesFromSource(content).requires
@@ -190,7 +185,6 @@ proc mojoCompile*(scriptAbs, binaryPath: string): int =
 proc createRunner*(): LanguageRunner =
   LanguageRunner(
     aliases: @[],
-    clearProc: mojoCacheClear,
     compileProc: mojoCompile,
     description: "Compile and run Mojo scripts",
     execProc: mojoExecTupleForBinary,

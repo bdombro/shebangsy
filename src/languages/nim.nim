@@ -34,29 +34,6 @@ flowchart TD
 import std/[os, osproc, strutils]
 import ../languages_common
 
-## Returns the shebangsy Nim cache directory under ``$HOME/.cache/shebangsy/nim``.
-proc nimCacheDirGet(): string =
-  let home = getEnv("HOME")
-  if home.len == 0:
-    stderr.writeLine "[shebangsy:nim] HOME is not set"
-    quit(1)
-  home / ".cache" / "shebangsy" / "nim"
-
-
-## Removes the Nim backend metadata cache directory.
-proc nimCacheClear(): int =
-  let dir = nimCacheDirGet()
-  if not dirExists(dir):
-    return 0
-  try:
-    removeDir(dir, checkDir = false)
-  except CatchableError as e:
-    stderr.writeLine "[shebangsy:nim] could not clear cache: ", e.msg
-    return 1
-  stderr.writeLine "[shebangsy:nim] cleared ", dir
-  0
-
-
 ## True when ``stem`` is a valid Nim identifier stem.
 proc nimIdentStemIsValid(stem: string): bool =
   if stem.len == 0:
@@ -260,7 +237,6 @@ proc nimExecTupleForBinary*(binaryPath: string; scriptArgs: seq[string]): ExecTu
 proc createRunner*(): LanguageRunner =
   LanguageRunner(
     aliases: @[],
-    clearProc: nimCacheClear,
     compileProc: nimCompile,
     description: "Compile and run Nim scripts (nimble/pixi aware)",
     execProc: nimExecTupleForBinary,

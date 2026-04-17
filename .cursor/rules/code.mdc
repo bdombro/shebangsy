@@ -46,9 +46,5 @@ File headers:
 
 Repository specifics:
 - POSIX-only assumptions are acceptable
-- use argsbarg for Nim CLI features
-- default to no shortened flags for newly added CLI options
 - local dev build entrypoint is just / justfile
 - use line max-width of 100 characters unless the line is a code block or URL
-- CliCommand.handler should be a named proc, not an inline proc literal
-- cliRun should receive an inline CliSchema(...) literal and inline argv expression

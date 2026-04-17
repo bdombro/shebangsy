@@ -29,11 +29,6 @@ import std/[os, strutils]
 import ../languages_common
 
 
-## Clears the global shebangsy cache (shared with other languages).
-proc python3CacheClear(): int =
-  cacheClear()
-
-
 ## Writes stripped source, ensures venv, runs ``pip install`` for each ``#!requires:`` token.
 proc python3Compile*(scriptAbs, binaryPath: string): int =
   if not toolEnsureOnPath("python3", "https://www.python.org/downloads/"):
@@ -113,7 +108,6 @@ proc python3ExecTupleForBinary*(binaryPath: string; scriptArgs: seq[string]): Ex
 proc createRunner*(): LanguageRunner =
   LanguageRunner(
     aliases: @["python"],
-    clearProc: python3CacheClear,
     compileProc: python3Compile,
     description: "Run Python3 scripts: isolated venv per cache key; pip install for #!requires:",
     execProc: python3ExecTupleForBinary,

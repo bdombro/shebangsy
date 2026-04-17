@@ -13,11 +13,11 @@ build:
 build-cross version="dev":
     ./scripts/build-cross.sh "{{version}}"
 
-# Install argsbarg dependency (required once before first build)
+# Install Nim dependencies (required once before first build)
 deps:
     nimble install
 
-# Build and install shebangsy to ~/.nimble/bin, write zsh completion
+# Build and install shebangsy to ~/.nimble/bin
 install:
     ./scripts/install.sh
 
