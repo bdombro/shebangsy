@@ -1,0 +1,1 @@
+Mojo bins are statically bound to other files in the build dir, so keep the whole app in this repo so that we can recompile whenever we clone or move the repo.

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 set -euo pipefail
 
@@ -64,7 +64,7 @@ build_linux() {
 
 main() {
   local version="${1:-dev}"
-  local source_file="${ROOT_DIR}/shebangsy.nim"
+  local source_file="${ROOT_DIR}/src/shebangsy.nim"
   local dist_dir="${ROOT_DIR}/dist"
 
   require_nim
@@ -74,7 +74,6 @@ main() {
 
   mkdir -p "${dist_dir}"
   cd "${ROOT_DIR}"
-  ./scripts/gen-registry.sh
 
   local tmp_dir
   tmp_dir="$(mktemp -d)"

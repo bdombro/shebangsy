@@ -1,5 +1,5 @@
 #!/usr/bin/env -S shebangsy nim
-# requires: arraymancer
+#!requires: arraymancer
 
 # Demonstrate importing an external library
 

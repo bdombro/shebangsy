@@ -1,0 +1,7 @@
+---
+description: Example code standards
+globs: examples/**/*
+alwaysApply: false
+---
+
+- all functions must have a description comment

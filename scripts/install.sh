@@ -1,23 +1,12 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
-ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd -P)"
-
-cd "${ROOT_DIR}"
-./scripts/build.sh
-
-DIST_BIN="${ROOT_DIR}/dist/shebangsy"
-LOCAL_BIN="${HOME}/.local/bin"
-
-mkdir -p "${LOCAL_BIN}"
-cp -f "${DIST_BIN}" "${LOCAL_BIN}/shebangsy"
-chmod +x "${LOCAL_BIN}/shebangsy"
-
-echo "install.sh: installed ${LOCAL_BIN}/shebangsy"
+nimble install
+echo "install.sh: shebangsy installed to Nim's bin directory ~/.nimble/bin"
 
 mkdir -p "${HOME}/.zsh/completions"
-"${DIST_BIN}" completion zsh > "${HOME}/.zsh/completions/_shebangsy"
-"${DIST_BIN}" cache-clear
-# rm -rf ~/.cache/shebangsy/* 2>/dev/null || true
+shebangsy completion zsh > "${HOME}/.zsh/completions/_shebangsy"
+echo "install.sh: zsh completion installed to ${HOME}/.zsh/completions/_shebangsy"
+rm -rf ~/.cache/shebangsy/* 2>/dev/null || true
+echo "install.sh: shebangsy cache cleared"

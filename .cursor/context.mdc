@@ -3,3 +3,5 @@ description: Project context for AI agents
 ---
 
 Always include `./README.md` in context before answering or making changes in this repository.
+Apply `./.cursor/rules/code.mdc` when editing Nim source or repo scripts.
+Apply `./.cursor/rules/code.mdc` when editing Nim source or repo scripts.

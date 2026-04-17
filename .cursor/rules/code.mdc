@@ -1,0 +1,54 @@
+---
+description: Nim and CLI code standards for shebangsy
+globs: src/**/*.nim
+alwaysApply: false
+---
+Commands that shell out to non-bundled binaries should check PATH, print install hints, and exit non-zero when required commands are missing.
+
+Multi-word identifiers:
+- order from general to specific (head-first: main concept, then qualifier)
+- typically topic -> optional subtype/format -> measured attribute -> limit/qualifier
+- example: coreProcessExitCodeWait, not waitExitCodeCoreProcess
+
+Field names:
+- minimal tokens within the owning type
+- no repeated type/module/domain prefixes unless required for disambiguation
+
+Module-scope declarations (except imports) should be:
+- documented with a doc comment above the declaration
+- sorted alphabetically by identifier where practical
+- procs: callee before caller when required by the compiler; otherwise alphabetical
+
+Functions:
+- must have a human-readable doc comment
+- leave a blank line after each function
+- entry-point and orchestration procs should read top-down as a short sequence of named steps
+- keep the happy path obvious and move mechanics into helpers with intent-revealing names
+
+Helper placement:
+- prefer nested helpers only for tiny logic tightly coupled to one block
+- promote helpers to module scope when nesting makes the caller hard to scan
+- shared by two or more call sites should usually move to the smallest common scope
+
+Parameter shape:
+- if a proc takes more than four primitive or config parameters, prefer an options object
+- if the same cluster of values passes through multiple layers, define a named type for it
+
+Branching:
+- materially different pipelines should be separate helpers, not interleaved
+- repeated status literals and sentinels should be centralized constants or enums when suitable
+
+File headers:
+- every source file must open with a block comment (``#[…]#`` in Nim) containing:
+  1. **goal** – one or two sentences on what this file does and why it exists
+  2. **how** – a paragraph or bullets describing the implementation approach
+- include a Mermaid diagram when the control flow or architecture is non-trivial
+
+Repository specifics:
+- POSIX-only assumptions are acceptable
+- use argsbarg for Nim CLI features
+- default to no shortened flags for newly added CLI options
+- local dev build entrypoint is just / justfile
+- use line max-width of 100 characters unless the line is a code block or URL
+- CliCommand.handler should be a named proc, not an inline proc literal
+- cliRun should receive an inline CliSchema(...) literal and inline argv expression

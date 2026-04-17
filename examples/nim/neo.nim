@@ -1,7 +1,7 @@
 #!/usr/bin/env -S shebangsy nim
 # Neo still uses ``shallowCopy`` internally; Nim 2 defaults need refc for that (see neo issue #50).
-# flags: --mm:refc
-# requires: neo
+#!flags: --mm:refc
+#!requires: neo
 
 # Demonstrate importing an external library and using a compiler flag
 
