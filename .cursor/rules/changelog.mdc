@@ -1,0 +1,10 @@
+---
+description: >-
+  Same PR/turn: update CHANGELOG.md under [Unreleased] whenever behavior, API, package surface,
+  user docs, CI/scripts/tooling, or platform/deps change; skip only no-op refactors (say so).
+alwaysApply: true
+---
+
+- **Where:** `## [Unreleased]` only—`### Added` / `Changed` / `Fixed` / `Removed` ([Keep a Changelog](https://keepachangelog.com/)); one idea per bullet.
+- **Don’t:** add dated `## [x.y.z]` blocks (use `just release` / `scripts/release.py` unless the user asked); **don’t edit** footer compare/tag links (`release.py` needs `[Unreleased]: …compare/v*…...HEAD`).
+- **Before you stop:** if the “must” cases in `description` applied and `CHANGELOG.md` wasn’t updated, fix that or state why you skipped.

@@ -27,12 +27,12 @@ release VERSION:
     set -euo pipefail
     cd "{{justfile_directory()}}"
     if [[ "{{VERSION}}" =~ ^(patch|minor|major)$ ]]; then
-      VER="$(./scripts/release.sh --print-version "{{VERSION}}")"
+      VER="$(./scripts/release.py --print-version "{{VERSION}}")"
       ./scripts/build-cross.sh "$VER"
-      ./scripts/release.sh "$VER"
+      ./scripts/release.py "$VER"
     else
       ./scripts/build-cross.sh "{{VERSION}}"
-      ./scripts/release.sh "{{VERSION}}"
+      ./scripts/release.py "{{VERSION}}"
     fi
 
 # Run smoke tests for Nim and Go (Mojo skipped if unavailable)
