@@ -1,9 +1,18 @@
 #!/usr/bin/env -S shebangsy nim
-# Neo still uses ``shallowCopy`` internally; Nim 2 defaults need refc for that (see neo issue #50).
 #!flags: --mm:refc
 #!requires: neo
 
-# Demonstrate importing an external library and using a compiler flag
+## Linear algebra with neo: prints vector sum, dot product, and a matrix–vector
+## product for small fixed tensors. Neo is fetched via #!requires; Nim 2 needs
+## ``--mm:refc`` because neo still uses ``shallowCopy`` internally (neo issue #50).
+##
+## Usage:
+##   ./examples/nim/neo.nim
+##
+## Expected:
+##   [ 5.0	7.0	9.0 ]
+##   32.0
+##   [ 1.0	3.0 ]
 
 import neo
 

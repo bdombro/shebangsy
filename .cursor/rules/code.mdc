@@ -48,3 +48,14 @@ Repository specifics:
 - POSIX-only assumptions are acceptable
 - local dev build entrypoint is just / justfile
 - use line max-width of 100 characters unless the line is a code block or URL
+
+Language backends (`src/languages/*.nim`):
+- use `wpSpawnCachedRetryCompile` only for interpreted languages; compiled languages use `wpExecvCached`
+- use `cacheShadowDirFromBinary` for per-script build state; do not introduce new shared workspaces unless the language already documents one (e.g. SwiftPM under `swift-workspace/`)
+- document in the file header whether `#!flags:` is forwarded to the build tool or silently ignored
+- document in the file header whether `#!version:` is consumed (when the backend reads `FrontmatterDirectives.version`) or ignored
+
+Error messages:
+- prefix every message with `[shebangsy:<runner-key>]` (e.g. `[shebangsy:cpp]`)
+- echo the offending spec or path in the message
+- use `toolEnsureOnPath` for required external binaries; never a bare `findExe` check

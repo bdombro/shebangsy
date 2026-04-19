@@ -1,5 +1,14 @@
 #!/usr/bin/env -S shebangsy cpp
-#!requires: cli11@2.4.1
+#!requires: github:CLIUtils/CLI11@v2.4.1:CLI11::CLI11
+
+// CLI11 demo: requires the ``hello`` subcommand and a positional ``name``; prints
+// ``hello, <name>`` when you run that subcommand.
+//
+// Usage:
+//   ./examples/cpp/cli11.cpp hello Ada
+//
+// Expected:
+//   hello, Ada
 
 #include <iostream>
 #include <string>

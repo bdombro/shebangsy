@@ -17,6 +17,8 @@ How:
   - With #!requires: → shared SwiftPM workspace at ~/.cache/shebangsy/swift-workspace;
     swift package add-dependency + add-target-dependency for each new dep;
     swift build -c release; copy .build/release/sheb to binaryPath.
+    Each token must be ``owner/repo@version:ProductName`` or ``https://...git@version:ProductName``
+    (SwiftPM product name required; bare package names are rejected).
   - @main detection: scan source for @main not followed by an identifier char
     (excludes @mainActor); inject -parse-as-library (bare for swiftc,
     -Xswiftc wrapped for SwiftPM) unless already present in #!flags:.
@@ -94,25 +96,9 @@ type
     packageId*: string
 
 
-const swiftKnownPackages: seq[(string, string, string, string)] = @[
-  ("swift-argument-parser", "https://github.com/apple/swift-argument-parser.git",
-      "ArgumentParser", "swift-argument-parser"),
-  ("apple/swift-argument-parser", "https://github.com/apple/swift-argument-parser.git",
-      "ArgumentParser", "swift-argument-parser"),
-  ("mxcl/promisekit", "https://github.com/mxcl/PromiseKit", "PromiseKit", "PromiseKit"),
-]
-
 ## Snippet inserted into shared ``Package.swift`` when no ``platforms:`` key exists.
 const swiftWorkspacePlatformsLine = "\n    platforms: [.macOS(\"26.0\"), .iOS(\"26.0\"), " &
     ".watchOS(\"13.0\"), .tvOS(\"26.0\"), .visionOS(\"3.0\")],"
-
-
-## Looks up a shorthand package key in ``swiftKnownPackages``.
-proc swiftKnownLookup(keyLower: string): (bool, string, string, string) =
-  for (k, url, prod, pid) in swiftKnownPackages:
-    if k == keyLower:
-      return (true, url, prod, pid)
-  (false, "", "", "")
 
 
 ## Ensures GitHub dependency URLs end with ``.git`` when applicable.
@@ -135,30 +121,6 @@ proc swiftPackageIdFromUrl(url: string): string =
     result = u[slash + 1 .. ^1]
   else:
     result = u
-
-
-## ``owner/repo`` lowercased from a GitHub URL, or empty when not GitHub-shaped.
-proc swiftGithubOwnerRepoKey(url: string): string =
-  var s = url.strip
-  if s.endsWith(".git"):
-    s = s[0 ..< ^4]
-  const needle = "github.com/"
-  let p = s.find(needle)
-  if p < 0:
-    return ""
-  let rest = s[p + needle.len .. ^1].strip
-  let slash = rest.find('/')
-  if slash < 0 or slash + 1 >= rest.len:
-    return ""
-  let owner = rest[0 ..< slash]
-  var tail = rest[slash + 1 .. ^1]
-  let slash2 = tail.find('/')
-  let repo =
-    if slash2 < 0:
-      tail
-    else:
-      tail[0 ..< slash2]
-  return (owner & "/" & repo).toLowerAscii
 
 
 ## Parses one ``#!requires:`` token into ``SwiftDepResolved`` or ``none`` on error.
@@ -194,39 +156,17 @@ proc swiftResolveRequiresToken(spec: string): Option[SwiftDepResolved] =
     url = swiftNormalizeDepUrl(left)
     packageId = swiftPackageIdFromUrl(url)
     if product.len == 0:
-      let (found, mUrl, mProd, mPid) = swiftKnownLookup(swiftGithubOwnerRepoKey(url))
-      if found:
-        url = swiftNormalizeDepUrl(mUrl)
-        product = mProd
-        packageId = mPid
-    if product.len == 0:
-      stderr.writeLine "[shebangsy:swift] unknown dependency URL; append :Product: ", spec
+      stderr.writeLine "[shebangsy:swift] append :ProductName after version: ", spec
       return none(SwiftDepResolved)
   elif '/' in left:
-    let key = left.toLowerAscii
-    let (found, mUrl, mProd, mPid) = swiftKnownLookup(key)
-    if found:
-      url = swiftNormalizeDepUrl(mUrl)
-      if product.len == 0:
-        product = mProd
-      packageId = mPid
-    else:
-      url = swiftNormalizeDepUrl("https://github.com/" & left)
-      packageId = swiftPackageIdFromUrl(url)
-      if product.len == 0:
-        stderr.writeLine "[shebangsy:swift] unknown package ", left,
-            "; append :ProductName after the version or use a mapped shorthand"
-        return none(SwiftDepResolved)
-  else:
-    let (found, mUrl, mProd, mPid) = swiftKnownLookup(left.toLowerAscii)
-    if not found:
-      stderr.writeLine "[shebangsy:swift] unknown package ", left,
-          "; use owner/repo@version, a full URL, or a mapped name (see README)"
-      return none(SwiftDepResolved)
-    url = swiftNormalizeDepUrl(mUrl)
+    url = swiftNormalizeDepUrl("https://github.com/" & left)
+    packageId = swiftPackageIdFromUrl(url)
     if product.len == 0:
-      product = mProd
-    packageId = mPid
+      stderr.writeLine "[shebangsy:swift] append :ProductName after version: ", spec
+      return none(SwiftDepResolved)
+  else:
+    stderr.writeLine "[shebangsy:swift] bare package name not supported; use owner/repo@version:ProductName"
+    return none(SwiftDepResolved)
 
   some(SwiftDepResolved(url: url, version: ver, product: product, packageId: packageId))
 

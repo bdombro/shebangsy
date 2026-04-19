@@ -64,6 +64,8 @@ type
     flags*: seq[string]
     ## Comma-separated package specs from ``#!requires:`` lines.
     requires*: seq[string]
+    ## First ``#!version:`` value; empty string when not present (language-specific meaning).
+    version*: string
 
   ## Compiles ``scriptAbs`` to ``binaryPath``; returns 0 on success.
   CompileProc* = proc(scriptAbs, binaryPath: string): int {.nimcall.}
@@ -87,9 +89,9 @@ type
     warmPathKind*: WarmPathKind
 
 
-## Parses ``#!requires:`` and ``#!flags:`` from the first ``maxLines`` lines of a script.
+## Parses ``#!requires:``, ``#!flags:``, and ``#!version:`` from the first ``maxLines`` lines of a script.
 proc frontmatterDirectivesFromSource*(content: string; maxLines = 40): FrontmatterDirectives =
-  result = FrontmatterDirectives(requires: @[], flags: @[])
+  result = FrontmatterDirectives(requires: @[], flags: @[], version: "")
   var lineNum = 0
   for line in content.splitLines:
     inc lineNum
@@ -100,6 +102,7 @@ proc frontmatterDirectivesFromSource*(content: string; maxLines = 40): Frontmatt
     let s = line.strip
     const requiresPrefix = "#!requires:"
     const flagsPrefix = "#!flags:"
+    const versionPrefix = "#!version:"
     if s.startsWith(requiresPrefix):
       let rest = s[requiresPrefix.len .. ^1].strip
       if rest.len == 0:
@@ -116,9 +119,14 @@ proc frontmatterDirectivesFromSource*(content: string; maxLines = 40): Frontmatt
       for tok in rest.splitWhitespace:
         if tok.len > 0:
           result.flags.add tok
+      continue
+    if s.startsWith(versionPrefix):
+      let rest = s[versionPrefix.len .. ^1].strip
+      if rest.len > 0 and result.version.len == 0:
+        result.version = rest
 
 
-## Drops the shebang line and any leading blank lines and ``#!requires:`` / ``#!flags:`` lines.
+## Drops the shebang line and any leading blank lines and ``#!requires:`` / ``#!flags:`` / ``#!version:`` lines.
 ##
 ## Blank lines in that prefix are skipped and do not appear at the start of the returned
 ## string; the result begins at the first line whose trimmed form is non-empty and is not a
@@ -133,7 +141,7 @@ proc stripShebangAndFrontmatterBody*(raw: string): string =
     if s.len == 0:
       inc i
       continue
-    if s.startsWith("#!requires:") or s.startsWith("#!flags:"):
+    if s.startsWith("#!requires:") or s.startsWith("#!flags:") or s.startsWith("#!version:"):
       inc i
       continue
     break
@@ -404,10 +412,16 @@ proc cacheWarmRunTryExec*(exe: string; args: openArray[string]): bool =
 
 
 ## True if ``findExe(tool)`` succeeds; else prints hint and returns false.
-proc toolEnsureOnPath*(tool, installHint: string): bool =
+## When ``runnerKey`` is non-empty, messages use ``[shebangsy:<runnerKey>]`` instead of ``[shebangsy]``.
+proc toolEnsureOnPath*(tool, installHint: string; runnerKey = ""): bool =
   if findExe(tool).len > 0:
     return true
-  stderr.writeLine "[shebangsy] required tool not found on PATH: ", tool
+  let tag =
+    if runnerKey.len > 0:
+      "[shebangsy:" & runnerKey & "]"
+    else:
+      "[shebangsy]"
+  stderr.writeLine tag, " required tool not found on PATH: ", tool
   if installHint.len > 0:
-    stderr.writeLine "[shebangsy] install hint: ", installHint
+    stderr.writeLine tag, " install hint: ", installHint
   false

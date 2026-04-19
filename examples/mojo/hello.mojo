@@ -1,5 +1,11 @@
 #!/usr/bin/env -S shebangsy mojo
 
-# Prints the canonical hello-world line for the Mojo example.
+# Canonical Mojo hello-world: prints one greeting line.
+#
+# Usage:
+#   ./examples/mojo/hello.mojo
+#
+# Expected:
+#   Hello, world!
 def main():
     print("Hello, world!")

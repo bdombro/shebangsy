@@ -1,27 +1,39 @@
 #[
-languages/python3 – run .py scripts with an isolated venv and pip-installed ``#!requires:``
+languages/python3 – run .py scripts with an isolated venv and ``#!requires:`` via uv or pip
 
 Goal: treat Python like other shebangsy backends: a cache key (size+mtime) maps to a
   stored artifact and a sidecar directory for build state.
 
-Why: ``#!requires:`` maps to ``pip install`` so scripts can depend on PyPI packages without
-  polluting the user environment. The stripped script body is written to ``binaryPath``;
-  the interpreter is the venv Python under ``cacheShadowDirFromBinary(binaryPath)``.
+Why: ``#!requires:`` maps to package install (``uv pip install`` when ``uv`` is on ``PATH``,
+  otherwise ``pip install``) so scripts can depend on PyPI without polluting the user
+  environment. The stripped script body is written to ``binaryPath``; the interpreter is
+  the venv Python under ``cacheShadowDirFromBinary(binaryPath)``. ``#!flags:`` is ignored.
 
 How:
-  1. ``stripShebangAndFrontmatterBody`` → write body to ``binaryPath``.
-  2. Ensure ``shadow/.venv`` exists (``python3 -m venv``).
-  3. ``pip install`` each token from ``frontmatterDirectivesFromSource`` (``#!flags:`` ignored).
+  1. If ``findExe("uv")`` succeeds, require ``uv`` only (no ``python3`` on PATH needed).
+     Else require ``python3`` and use ``python3 -m venv``.
+  2. ``createDir(shadow)``; if ``.venv/bin/python`` missing, ``uv venv .venv`` or ``python3 -m venv``.
+  3. ``writeFile(binaryPath, body)``.
+  4. If ``#!requires:`` tokens exist, one batched install; on failure wipe ``shadow``, recreate
+     venv, retry install once.
 
 ```mermaid
 flowchart TD
-  A[script.py] --> B[stripShebangAndFrontmatterBody]
-  B --> C[writeFile binaryPath]
-  C --> D{venv exists?}
-  D -- no --> E[python3 -m venv .venv]
-  D -- yes --> F[pip install specs]
+  A[script.py] --> B[strip + directives]
+  B --> C{uv on PATH?}
+  C -->|yes| D[uv venv if needed]
+  C -->|no| E[python3 -m venv if needed]
+  D --> F[write cached body]
   E --> F
-  F --> G[return 0]
+  F --> G{requires empty?}
+  G -->|yes| H[return 0]
+  G -->|no| I[uv pip install OR pip install all specs]
+  I --> J{ok?}
+  J -->|yes| H
+  J -->|no| K[wipe shadow + venv + retry batch once]
+  K --> L{retry ok?}
+  L -->|yes| H
+  L -->|no| M[return error code]
 ```
 ]#
 
@@ -29,12 +41,42 @@ import std/[os, strutils]
 import ../languages_common
 
 
-## Writes stripped source, ensures venv, runs ``pip install`` for each ``#!requires:`` token.
+## True when ``uv`` is available for venv + installs.
+proc python3UvAvailable(): bool =
+  findExe("uv").len > 0
+
+
+## Absolute path to the venv interpreter under ``shadow``.
+proc python3VenvPython(shadow: string): string =
+  absolutePath(shadow / ".venv" / "bin" / "python")
+
+
+## One batched install of all ``specs`` into ``shadow``'s venv (``venvPy`` absolute).
+proc python3InstallAll(shadow, venvPy: string; specs: seq[string]; useUv: bool; uvExe: string): int =
+  if specs.len == 0:
+    return 0
+  if useUv:
+    processExitCodeWait(uvExe, @["pip", "install", "-p", venvPy] & specs, shadow)
+  else:
+    processExitCodeWait(venvPy, @["-m", "pip", "install"] & specs, shadow)
+
+
+## Writes stripped source, ensures venv, batched install for ``#!requires:`` (uv or pip).
 proc python3Compile*(scriptAbs, binaryPath: string): int =
-  if not toolEnsureOnPath("python3", "https://www.python.org/downloads/"):
+  let useUv = python3UvAvailable()
+  if useUv:
+    if not toolEnsureOnPath("uv", "https://docs.astral.sh/uv/", runnerKey = "python3"):
+      return 1
+  else:
+    if not toolEnsureOnPath("python3", "https://www.python.org/downloads/", runnerKey = "python3"):
+      return 1
+
+  let uvExe = if useUv: findExe("uv") else: ""
+  let py3Exe = if not useUv: findExe("python3") else: ""
+  if useUv and uvExe.len == 0:
+    stderr.writeLine "[shebangsy:python3] uv not found on PATH"
     return 1
-  let py3Exe = findExe("python3")
-  if py3Exe.len == 0:
+  if not useUv and py3Exe.len == 0:
     stderr.writeLine "[shebangsy:python3] python3 not found on PATH"
     return 1
 
@@ -58,14 +100,15 @@ proc python3Compile*(scriptAbs, binaryPath: string): int =
     stderr.writeLine "[shebangsy:python3] cannot create shadow dir: ", shadow, ": ", e.msg
     return 1
 
-  proc venvPython(): string =
-    shadow / ".venv" / "bin" / "python"
-
-  if not fileExists(venvPython()):
-    let code = processExitCodeWait(py3Exe, @["-m", "venv", ".venv"], shadow)
-    if code != 0:
-      stderr.writeLine "[shebangsy:python3] python3 -m venv failed in ", shadow
-      return code
+  if not fileExists(python3VenvPython(shadow)):
+    let vcode =
+      if useUv:
+        processExitCodeWait(uvExe, @["venv", ".venv"], shadow)
+      else:
+        processExitCodeWait(py3Exe, @["-m", "venv", ".venv"], shadow)
+    if vcode != 0:
+      stderr.writeLine "[shebangsy:python3] venv creation failed in ", shadow
+      return vcode
 
   try:
     writeFile(binaryPath, body)
@@ -73,28 +116,33 @@ proc python3Compile*(scriptAbs, binaryPath: string): int =
     stderr.writeLine "[shebangsy:python3] cannot write cache entry: ", binaryPath, ": ", e.msg
     return 1
 
-  let venvPy = venvPython()
-  for spec in directives.requires:
-    var pipCode = processExitCodeWait(venvPy, @["-m", "pip", "install", spec], shadow)
-    if pipCode != 0:
-      try:
-        removeDir(shadow, checkDir = false)
-      except CatchableError:
-        discard
-      try:
-        createDir(shadow)
-      except CatchableError as e:
-        stderr.writeLine "[shebangsy:python3] cannot recreate shadow dir: ", shadow, ": ", e.msg
-        return 1
-      pipCode = processExitCodeWait(py3Exe, @["-m", "venv", ".venv"], shadow)
-      if pipCode != 0:
-        stderr.writeLine "[shebangsy:python3] venv recreate failed in ", shadow
-        return pipCode
-      pipCode = processExitCodeWait(venvPython(), @["-m", "pip", "install", spec], shadow)
-      if pipCode != 0:
-        stderr.writeLine "[shebangsy:python3] pip install failed after retry: ", spec
-        return pipCode
-  0
+  if directives.requires.len == 0:
+    return 0
+
+  let venvPy = python3VenvPython(shadow)
+  var code = python3InstallAll(shadow, venvPy, directives.requires, useUv, uvExe)
+  if code != 0:
+    try:
+      removeDir(shadow, checkDir = false)
+    except CatchableError:
+      discard
+    try:
+      createDir(shadow)
+    except CatchableError as e:
+      stderr.writeLine "[shebangsy:python3] cannot recreate shadow dir: ", shadow, ": ", e.msg
+      return 1
+    let v2 =
+      if useUv:
+        processExitCodeWait(uvExe, @["venv", ".venv"], shadow)
+      else:
+        processExitCodeWait(py3Exe, @["-m", "venv", ".venv"], shadow)
+    if v2 != 0:
+      stderr.writeLine "[shebangsy:python3] venv recreate failed in ", shadow
+      return v2
+    code = python3InstallAll(shadow, python3VenvPython(shadow), directives.requires, useUv, uvExe)
+    if code != 0:
+      stderr.writeLine "[shebangsy:python3] package install failed after retry"
+  code
 
 
 ## Exec tuple: venv Python with the cached script path as ``argv[1]``.
@@ -109,7 +157,8 @@ proc createRunner*(): LanguageRunner =
   LanguageRunner(
     aliases: @["python"],
     compileProc: python3Compile,
-    description: "Run Python3 scripts: isolated venv per cache key; pip install for #!requires:",
+    description:
+      "Run Python3 scripts: isolated venv per cache key; uv (if on PATH) or pip for #!requires:",
     execProc: python3ExecTupleForBinary,
     key: "python3",
     warmPathKind: wpSpawnCachedRetryCompile,

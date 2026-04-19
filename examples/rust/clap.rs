@@ -2,12 +2,16 @@
 #!requires: clap@4@features=[derive]
 
 /*
-Minimal Clap CLI (mirrors examples/go/cobra.go).
+Tiny CLI with Clap: prints "Hello, world!" by default, or greets the optional
+positional name (mirrors examples/go/cobra.go).
 
 Usage:
-	chmod +x examples/rust/clap.rs
 	./examples/rust/clap.rs
 	./examples/rust/clap.rs World
+
+Expected (matches the usage lines above in order):
+	Hello, world!
+	Hello, World!
 */
 
 use clap::Parser;

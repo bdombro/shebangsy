@@ -10,17 +10,19 @@ Why: Mojo is distributed exclusively through the Modular conda channel and requi
   setup.
 
 How:
-  1. Parse #!requires: specs (treated as PyPI deps; Mojo itself is always added).
+  1. Parse #!requires: specs (treated as PyPI deps; Mojo itself is always added) and
+     optional #!version: (pixi version constraint for the mojo conda dependency).
   2. Write a pixi.toml with Modular + conda-forge channels and an optional
      [pypi-dependencies] table under ``cacheShadowDirFromBinary(binaryPath)``.
   3. Copy the script source to projectDir/main.mojo.
   4. pixi run mojo build → copy the output binary to binaryPath.
-  5. At runtime: run the binary directly unless PyPI deps are present, in which case
-     pixi run mojo run is used to stay inside the managed environment.
+  5. At runtime: execv the cached binary directly when there are no PyPI deps; when
+     [pypi-dependencies] is present, run ``pixi run mojo run`` so Python interop sees
+     the pixi environment.
 
 ```mermaid
 flowchart TD
-    A[script.mojo] --> B[parse #!requires:]
+    A[script.mojo] --> B[parseDirectives]
     B --> C[write pixi.toml + main.mojo]
     C --> D[pixi run mojo build]
     D --> E[copy to binaryPath]
@@ -31,29 +33,11 @@ flowchart TD
 ]#
 
 import std/[os, strutils]
-from std/posix import Mode, O_CLOEXEC, O_CREAT, O_WRONLY
 import ../languages_common
 
-## POSIX ``open(2)`` for optional Mojo-side locking (internal).
-proc posixOpen(path: cstring; oflag: cint; mode: Mode): cint {.importc: "open", header: "<fcntl.h>",
-    sideEffect.}
 
-
-## POSIX ``flock(2)`` (internal).
-proc flock(fd: cint; operation: cint): cint {.importc, header: "<sys/file.h>", sideEffect.}
-
-
-## POSIX ``close(2)`` (internal).
-proc posixClose(fd: cint): cint {.importc: "close", header: "<unistd.h>", sideEffect.}
-
-
-## Exclusive flock flag (unused here but kept for parity with other backends).
-const LOCK_EX = 2.cint
-
-
-## ``#!requires:`` PyPI-style specs from the script front matter.
-proc mojoRequiresFromSource(content: string): seq[string] =
-  frontmatterDirectivesFromSource(content).requires
+const mojoCondaChannel = "https://conda.modular.com/max-nightly"
+const mojoVersionDefault = ">=0.26.0,<0.27"
 
 
 ## One ``pixi.toml`` ``[pypi-dependencies]`` line for a ``name@version`` spec.
@@ -91,7 +75,7 @@ proc pixiHostPlatformGet(): string =
 
 
 ## Writes ``projectDir/pixi.toml`` with Modular + conda-forge channels and optional PyPI deps.
-proc pixiProjectWrite(projectDir: string; pkgs: seq[string]) =
+proc pixiProjectWrite(projectDir: string; pkgs: seq[string]; mojoVersion = "") =
   var depsBlock = ""
   if pkgs.len > 0:
     depsBlock.add "\n[pypi-dependencies]\n"
@@ -100,8 +84,9 @@ proc pixiProjectWrite(projectDir: string; pkgs: seq[string]) =
       if line.len > 0:
         depsBlock.add line & "\n"
 
+  let ver = if mojoVersion.len > 0: mojoVersion else: mojoVersionDefault
   let condaChannels =
-    "channels = [\"https://conda.modular.com/max-nightly\", \"conda-forge\"]"
+    "channels = [\"" & mojoCondaChannel & "\", \"conda-forge\"]"
   let manifest = @[
     "[workspace]",
     "authors = [\"shebangsy\"]",
@@ -111,7 +96,7 @@ proc pixiProjectWrite(projectDir: string; pkgs: seq[string]) =
     "version = \"0.1.0\"",
     "",
     "[dependencies]",
-    "mojo = \">=0.26.0,<0.27\"",
+    "mojo = \"" & ver & "\"",
     "python = \"==3.11\"",
   ].join("\n")
   writeFile(projectDir / "pixi.toml", manifest & depsBlock)
@@ -158,8 +143,15 @@ proc mojoCompileWithPixi(projectDir: string; binaryPath: string): int =
   0
 
 
-## Exec tuple for a cached Mojo binary.
+## Exec tuple: direct execv when no PyPI deps; ``pixi run mojo run`` when Python interop needs the env.
 proc mojoExecTupleForBinary*(binaryPath: string; scriptArgs: seq[string]): ExecTuple =
+  let shadow = cacheShadowDirFromBinary(binaryPath)
+  let manifest = shadow / "pixi.toml"
+  if pixiManifestHasPyDeps(manifest):
+    let pixiExe = findExe("pixi")
+    if pixiExe.len > 0:
+      return (pixiExe, @["run", "--manifest-path", manifest, "mojo", "run", binaryPath] & scriptArgs)
+    stderr.writeLine "[shebangsy:mojo] pixi not found on PATH; running binary directly (PyPI deps may be unavailable)"
   (binaryPath, scriptArgs)
 
 
@@ -172,11 +164,11 @@ proc mojoCompile*(scriptAbs, binaryPath: string): int =
       stderr.writeLine "[shebangsy:mojo] cannot read script: ", scriptAbs, ": ", e.msg
       return 1
 
-  let requires = mojoRequiresFromSource(raw)
+  let directives = frontmatterDirectivesFromSource(raw)
   let shadow = cacheShadowDirFromBinary(binaryPath)
   createDir(shadow)
   writeFile(shadow / "main.mojo", raw)
-  pixiProjectWrite(shadow, requires)
+  pixiProjectWrite(shadow, directives.requires, directives.version)
 
   mojoCompileWithPixi(shadow, binaryPath)
 

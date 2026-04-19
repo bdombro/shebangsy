@@ -61,6 +61,9 @@ proc shebangsyWarmPathExec(
 
   createDir(parentDir(binaryPath))
   let lockPath = cacheLockPathFromBinary(binaryPath)
+  # Lock is intentionally not released here: execv replaces this process and the OS
+  # releases all file descriptors. shebangsyInterpretedWarmRun must release explicitly
+  # because it spawns a child instead of exec-ing.
   discard cacheCompileLockAcquire(lockPath)
   let (lockExe, lockArgs) = execProc(binaryPath, scriptArgs)
   if cacheWarmRunTryExec(lockExe, lockArgs):

@@ -2,12 +2,16 @@
 #!requires: requests
 
 """
-Minimal HTTP fetch example demonstrating #!requires: with shebangsy python3.
+Fetch a URL with the ``requests`` library and print the HTTP status plus the first
+80 characters of the response body. Demonstrates ``#!requires:`` for Python deps.
 
 Usage:
-    chmod +x examples/python/requests.py
     ./examples/python/requests.py
     ./examples/python/requests.py https://example.com
+
+Expected (status line is exact; HTML prefix may change if the site changes):
+    200 https://example.com
+    <!doctype html><html lang="en"><head><title>Example Domain</title><meta name="vi
 """
 
 import sys

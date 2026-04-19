@@ -1,5 +1,13 @@
 #!/usr/bin/env -S shebangsy cpp
 
+// Minimal C++ hello-world: prints a fixed greeting to stdout.
+//
+// Usage:
+//   ./examples/cpp/hello.cpp
+//
+// Expected:
+//   Hello, C++!
+
 #include <iostream>
 
 using namespace std;

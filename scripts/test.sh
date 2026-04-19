@@ -101,12 +101,12 @@ if [[ "${RUN_SWIFT}" == true ]]; then
 if command -v swift >/dev/null 2>&1 && swift --version >/dev/null 2>&1 &&
   command -v swiftc >/dev/null 2>&1 && swiftc --version >/dev/null 2>&1; then
   run_lang_test swift ./examples/swift/hello.swift
-  echo "==> swift: ArgumentParser sample (swift-argument-parser.swift)"
+  echo "==> swift: ArgumentParser sample (cli-sap.swift)"
   # First run may print SwiftPM lines to stdout; program output is the last line.
-  out="$("${BIN}" swift ./examples/swift/swift-argument-parser.swift World 2>/dev/null | tail -n 1)"
+  out="$("${BIN}" swift ./examples/swift/cli-sap.swift World 2>/dev/null | tail -n 1)"
   out="${out%$'\r'}"
   out="${out%$'\n'}"
-  [[ "${out}" == "Hello, World!" ]] || fail "swift swift-argument-parser.swift expected 'Hello, World!', got '${out}'"
+  [[ "${out}" == "Hello, World!" ]] || fail "swift cli-sap.swift expected 'Hello, World!', got '${out}'"
   echo "==> swift: @main sample (promise.swift)"
   if ! "${BIN}" swift ./examples/swift/promise.swift >/dev/null 2>&1; then
     fail "swift promise.swift exited non-zero"

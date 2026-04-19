@@ -90,8 +90,8 @@ proc nimRequiresInstallPaths(pkgs: seq[string]): seq[string] =
     return
   let nimbleExe = findExe("nimble")
   if nimbleExe.len == 0:
-    stderr.writeLine "[nimr] nimble is not on PATH; needed for # requires: ", pkgs.join(", ")
-    stderr.writeLine "[nimr] install Nim/Nimble: https://nim-lang.org/install.html"
+    stderr.writeLine "[shebangsy:nim] nimble is not on PATH; needed for # requires: ", pkgs.join(", ")
+    stderr.writeLine "[shebangsy:nim] install Nim/Nimble: https://nim-lang.org/install.html"
     quit(1)
   for pkg in pkgs:
     let pkgStem = pkg.split('@')[0].strip
@@ -99,11 +99,11 @@ proc nimRequiresInstallPaths(pkgs: seq[string]): seq[string] =
     if pathPreCode != 0 or pathPre.strip.len == 0:
       let installCode = processExitCodeWait(nimbleExe, ["install", "-Y", pkg], "")
       if installCode != 0:
-        stderr.writeLine "[nimr] nimble install failed for: ", pkg
+        stderr.writeLine "[shebangsy:nim] nimble install failed for: ", pkg
         quit(1)
     let (pathOut, pathCode) = execCmdEx(nimbleExe & " --silent path " & pkgStem)
     if pathCode != 0 or pathOut.strip.len == 0:
-      stderr.writeLine "[nimr] nimble path failed for: ", pkgStem
+      stderr.writeLine "[shebangsy:nim] nimble path failed for: ", pkgStem
       quit(1)
     for line in pathOut.splitLines:
       let w = line.strip
@@ -145,15 +145,15 @@ proc nimCompileInvoke(nimSource: string; scriptPathForPixiWalk: string; binaryPa
   if manifest.len > 0:
     let pixiExe = findExe("pixi")
     if pixiExe.len == 0:
-      stderr.writeLine "[nimr] pixi.toml found (", manifest, ") but pixi is not on PATH"
-      stderr.writeLine "[nimr] install pixi: https://pixi.sh"
+      stderr.writeLine "[shebangsy:nim] pixi.toml found (", manifest, ") but pixi is not on PATH"
+      stderr.writeLine "[shebangsy:nim] install pixi: https://pixi.sh"
       quit(1)
     let args = @["run", "--manifest-path", manifest, "nim"] & compileTail
     return processExitCodeWait(pixiExe, args, workDir)
   let nimExe = findExe("nim")
   if nimExe.len == 0:
-    stderr.writeLine "[nimr] nim is not on PATH"
-    stderr.writeLine "[nimr] install Nim, or add pixi.toml + nim via pixi (https://pixi.sh)"
+    stderr.writeLine "[shebangsy:nim] nim is not on PATH"
+    stderr.writeLine "[shebangsy:nim] install Nim, or add pixi.toml + nim via pixi (https://pixi.sh)"
     quit(1)
   processExitCodeWait(nimExe, compileTail, workDir)
 
@@ -197,7 +197,7 @@ proc nimCompile*(scriptAbs, binaryPath: string): int =
     try:
       readFile(scriptAbs)
     except CatchableError as e:
-      stderr.writeLine "[nimr] cannot read script: ", scriptAbs, ": ", e.msg
+      stderr.writeLine "[shebangsy:nim] cannot read script: ", scriptAbs, ": ", e.msg
       return 1
 
   let requireSpecs = nimRequiresFromSource(raw)

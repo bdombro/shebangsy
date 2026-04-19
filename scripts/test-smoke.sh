@@ -5,6 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd -P)"
 BIN="${ROOT_DIR}/dist/shebangsy"
+skipped=0
 
 cd "${ROOT_DIR}"
 ./scripts/build.sh
@@ -23,14 +24,14 @@ ext_ready() {
     cpp)
       command -v cmake >/dev/null 2>&1 && cmake --version >/dev/null 2>&1
       ;;
-    rs)
+    rust)
       command -v cargo >/dev/null 2>&1 && cargo --version >/dev/null 2>&1
       ;;
     swift)
       command -v swift >/dev/null 2>&1 && swift --version >/dev/null 2>&1 &&
         command -v swiftc >/dev/null 2>&1 && swiftc --version >/dev/null 2>&1
       ;;
-    py)
+    python3)
       command -v python3 >/dev/null 2>&1 && python3 --version >/dev/null 2>&1
       ;;
     *)
@@ -45,9 +46,9 @@ lang_for_ext() {
     go) echo go ;;
     mojo) echo mojo ;;
     cpp) echo cpp ;;
-    rs) echo rs ;;
+    rs) echo rust ;;
     swift) echo swift ;;
-    py) echo py ;;
+    py) echo python3 ;;
     *) return 1 ;;
   esac
 }
@@ -63,22 +64,22 @@ while IFS= read -r path; do
 
   if ! ext_ready "${lang}"; then
     echo "==> skip ${rel} (${lang} unavailable)"
+    skipped=$((skipped + 1))
     continue
   fi
 
   echo "==> ${rel}"
   case "${rel}" in
     examples/cpp/cli11.cpp)
-      "${BIN}" "${path}" hello World >/dev/null
+      "${BIN}" "${lang}" "${path}" hello World >/dev/null
       ;;
     *)
-      "${BIN}" "${path}" >/dev/null
+      "${BIN}" "${lang}" "${path}" >/dev/null
       ;;
   esac
 
-# C++ examples share one CMake workspace under ~/.cache/shebangsy/cpp-workspace.
-# Run examples/cpp/hello.cpp before other .cpp files so a prior CLI11 build does
-# not leave the wrong binary as the executable for a minimal hello (shebangsy cpp backend).
+# C++ uses a per-script CMake tree under ~/.cache/shebangsy/.../*.project/; hello.cpp is
+# listed first so minimal builds stay obvious when reading smoke output.
 done < <(
   find "${ROOT_DIR}/examples" \( -path "${ROOT_DIR}/examples/cpp" -prune \) -o \
     -type f \( \
@@ -94,4 +95,7 @@ done < <(
   fi
 )
 
+if (( skipped > 0 )); then
+  echo "test-smoke.sh: WARNING: skipped ${skipped} example(s) — toolchain unavailable for that runner" >&2
+fi
 echo "test-smoke.sh: all runnable examples passed"

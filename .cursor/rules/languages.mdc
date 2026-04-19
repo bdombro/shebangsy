@@ -1,0 +1,12 @@
+---
+description: Adding a language backend requires three synchronized changes
+globs:
+  - src/languages_registry.nim
+  - scripts/test-smoke.sh
+alwaysApply: false
+---
+
+When adding a language, update all three in the same change:
+- `src/languages_registry.nim` — import + `registryAll()` entry
+- `scripts/test-smoke.sh` `ext_ready` — toolchain availability check
+- `scripts/test-smoke.sh` `lang_for_ext` — must echo the LanguageRunner key (e.g. `python3`), not the file extension (e.g. `py`); `ext_ready` must define a matching `case` arm for that key

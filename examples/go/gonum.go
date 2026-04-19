@@ -2,10 +2,21 @@
 #!requires: gonum.org/v1/gonum
 
 /*
-Gonum + shebangsy
+Gonum + shebangsy: minimal linear algebra demo.
 
-Minimal linear algebra demo: element-wise vector add, dot product, and
-matrix–vector multiply. Dependencies are fetched automatically.
+Prints element-wise vector addition, the dot product of two 3-vectors, and a
+small matrix–vector multiply. Gonum is pulled in via #!requires.
+
+Usage:
+	./examples/go/gonum.go
+
+Expected:
+	u + v = ⎡5⎤
+	         ⎢7⎥
+	         ⎣9⎦
+	u · v = 32
+	A * x = ⎡1⎤
+	         ⎣3⎦
 */
 
 package main

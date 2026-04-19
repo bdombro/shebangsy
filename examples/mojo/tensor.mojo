@@ -1,7 +1,17 @@
 #!/usr/bin/env -S shebangsy mojo
-# Simple matrix-style example that runs on baseline Mojo syntax.
 
-# Prints a nested list as a matrix and a simple sum of corner elements.
+# Baseline Mojo demo: prints a 2x3 matrix built from nested lists and the sum
+# of one corner element plus the opposite corner.
+#
+# Usage:
+#   ./examples/mojo/tensor.mojo
+#
+# Expected:
+#   Matrix:
+#   1.0 2.0 3.0
+#   4.0 5.0 6.0
+#
+#   First element + last element = 7.0
 def main():
     matrix = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]
 

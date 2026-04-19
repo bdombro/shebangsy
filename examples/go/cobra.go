@@ -2,7 +2,16 @@
 #!requires: github.com/spf13/cobra
 
 /*
-Minimal Cobra CLI (mirrors examples/swift/swift-argument-parser.swift).
+Tiny CLI built with Cobra: prints "Hello, world!" by default, or greets the first
+positional name you pass (same idea as examples/rust/clap.rs).
+
+Usage:
+	./examples/go/cobra.go
+	./examples/go/cobra.go Alice
+
+Expected (matches the usage lines above in order):
+	Hello, world!
+	Hello, Alice!
 */
 
 package main

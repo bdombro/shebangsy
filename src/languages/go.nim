@@ -33,10 +33,9 @@ import ../languages_common
 ## Stages the script under ``cacheShadowDirFromBinary``, runs ``go get`` for ``#!requires:``,
 ## and builds to ``binaryPath``.
 proc goCompile*(scriptAbs, binaryPath: string): int =
-  let goExe = findExe("go")
-  if goExe.len == 0:
-    stderr.writeLine "[shebangsy] go compiler not found on PATH"
+  if not toolEnsureOnPath("go", "https://go.dev/dl/"):
     return 1
+  let goExe = findExe("go")
 
   let scriptContent =
     try:
