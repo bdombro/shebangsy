@@ -137,7 +137,7 @@ xychart-beta horizontal
     title "Mean time (ms) per app — all time"
     x-axis ["cpp/bin", "cpp/shebangsy.cpp", "go/bin", "go/shebangsy.go", "go/gorun.go", "go/scriptisto.go", "mojo/bin", "mojo/shebangsy.mojo", "nim/bin", "nim/shebangsy.nim", "python/bin", "python/shebangsy.py", "python/uv.py", "rust/bin", "rust/shebangsy.rs", "swift/bin", "swift/shebangsy.swift", "swift/swift_sh.swift"]
     y-axis "ms" 0 --> 80
-    bar [5.7, 17.2, 7.0, 17.9, 19.1, 19.1, 10.6, 20.9, 5.9, 17.0, 16.7, 28.9, 55.2, 5.9, 16.6, 6.3, 16.7, 80.0]
+    bar [5.8, 16.3, 6.6, 18.0, 18.6, 18.8, 10.8, 22.0, 6.1, 17.8, 16.5, 30.3, 54.3, 6.1, 18.1, 7.0, 17.9, 80.0]
 ```
 
 See [`docs/contributing.md`](./docs/contributing.md#running-the-benchmark) for how to run the benchmark and [`benches-report.md`](./benches-report.md) for more charts.

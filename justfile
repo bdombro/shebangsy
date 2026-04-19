@@ -5,6 +5,10 @@ _:
 bench:
     ./scripts/bench.py
 
+# Regenerate benches-report.md and README Results chart from benches.jsonl (no hyperfine)
+bench-report:
+    ./scripts/bench.py --regenerate-report
+
 # Build shebangsy binary to ./dist/shebangsy
 build:
     ./scripts/build.sh

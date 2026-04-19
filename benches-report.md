@@ -1,8 +1,8 @@
 # Benchmark report
 
-Generated from [`benches.jsonl`](./benches.jsonl) (5 run(s)).
+Generated from [`benches.jsonl`](./benches.jsonl) (3 run(s)).
 
-**Latest run:** `time=1776445495` · **CPU:** Apple M4 Pro
+**Latest run:** `time=1776620953` · **CPU:** Apple M4 Pro
 
 ## Overhead vs `bin` over time
 
@@ -27,15 +27,15 @@ config:
 ---
 xychart-beta
     title "Overhead vs bin: script ms minus lang/bin (lower is better)"
-    x-axis ["#1 04-17 16:08", "#2 04-17 17:57", "#3 04-17 18:00", "#4 04-17 18:03", "#5 04-17 18:04"]
-    y-axis "overhead ms" 7 --> 15
-    line [12.4, 9.9, 10.1, 11.2, 13.7]
-    line [11.7, 11.9, 10.2, 9.9, 10.9]
-    line [8.9, 11.6, 9.2, 10.7, 11.0]
-    line [10.2, 11.6, 10.2, 11.8, 11.8]
-    line [12.6, 13.3, 11.2, 10.8, 13.2]
-    line [9.1, 11.9, 7.9, 12.3, 12.3]
-    line [9.3, 10.2, 9.3, 10.3, 12.6]
+    x-axis ["#1 04-17 17:57", "#2 04-19 18:34", "#3 04-19 18:49"]
+    y-axis "overhead ms" 9 --> 15
+    line [9.9, 11.1, 10.4]
+    line [11.9, 10.4, 11.7]
+    line [11.6, 11.3, 10.9]
+    line [11.6, 12.2, 11.3]
+    line [13.3, 14.2, 13.8]
+    line [11.9, 11.7, 12.4]
+    line [10.2, 12.0, 10.4]
 ```
 
 ## Absolute time (ms) - most recent run
@@ -61,9 +61,9 @@ config:
 ---
 xychart-beta horizontal
     title "Latest run — mean time (ms) per app"
-    x-axis ["cpp/bin", "cpp/shebangsy.cpp", "go/bin", "go/shebangsy.go", "go/gorun.go", "go/scriptisto.go", "mojo/bin", "mojo/shebangsy.mojo", "nim/bin", "nim/shebangsy.nim", "python/bin", "python/shebangsy.py", "python/uv.py", "rust/bin", "rust/shebangsy.rs", "swift/bin", "swift/shebangsy.swift", "swift/swift_sh.swift"]
+    x-axis ["cpp/bin", "cpp/shebangsy.cpp", "go/bin", "go/gorun.go", "go/shebangsy.go", "go/scriptisto.go", "mojo/bin", "mojo/shebangsy.mojo", "nim/bin", "nim/shebangsy.nim", "python/bin", "python/shebangsy.py", "python/uv.py", "rust/bin", "rust/shebangsy.rs", "swift/bin", "swift/shebangsy.swift", "swift/swift_sh.swift"]
     y-axis "ms" 0 --> 80
-    bar [6.4, 20.1, 7.8, 18.7, 20.4, 20.8, 11.0, 22.0, 6.8, 18.6, 16.9, 30.1, 56.1, 6.8, 19.1, 7.2, 19.8, 80.0]
+    bar [5.2, 15.6, 5.8, 17.0, 17.5, 17.8, 10.8, 21.7, 6.3, 17.6, 16.7, 30.5, 55.8, 5.9, 18.3, 7.3, 17.7, 80.0]
 ```
 
 ## Absolute time (ms) — mean of all runs
@@ -91,7 +91,7 @@ xychart-beta horizontal
     title "Mean time (ms) per app — all time"
     x-axis ["cpp/bin", "cpp/shebangsy.cpp", "go/bin", "go/shebangsy.go", "go/gorun.go", "go/scriptisto.go", "mojo/bin", "mojo/shebangsy.mojo", "nim/bin", "nim/shebangsy.nim", "python/bin", "python/shebangsy.py", "python/uv.py", "rust/bin", "rust/shebangsy.rs", "swift/bin", "swift/shebangsy.swift", "swift/swift_sh.swift"]
     y-axis "ms" 0 --> 80
-    bar [5.7, 17.2, 7.0, 17.9, 19.1, 19.1, 10.6, 20.9, 5.9, 17.0, 16.7, 28.9, 55.2, 5.9, 16.6, 6.3, 16.7, 80.0]
+    bar [5.8, 16.3, 6.6, 18.0, 18.6, 18.8, 10.8, 22.0, 6.1, 17.8, 16.5, 30.3, 54.3, 6.1, 18.1, 7.0, 17.9, 80.0]
 ```
 
 ## Overhead vs `bin` (shebangsy only)
@@ -120,8 +120,8 @@ config:
 xychart-beta horizontal
     title "Latest run — overhead vs bin (shebangsy only, lower is better)"
     x-axis ["cpp/shebangsy.cpp", "go/shebangsy.go", "mojo/shebangsy.mojo", "nim/shebangsy.nim", "python/shebangsy.py", "rust/shebangsy.rs", "swift/shebangsy.swift"]
-    y-axis "overhead ms" 10 --> 15
-    bar [13.7, 10.9, 11.0, 11.8, 13.2, 12.3, 12.6]
+    y-axis "overhead ms" 9 --> 15
+    bar [10.4, 11.7, 10.9, 11.3, 13.8, 12.4, 10.4]
 ```
 
 ## Overhead vs `bin` — mean of all runs (shebangsy only)
@@ -146,8 +146,23 @@ config:
       yAxisTickColor: "#5c6370"
 ---
 xychart-beta horizontal
-    title "Mean overhead vs bin — all 5 run(s), shebangsy only (lower is better)"
+    title "Mean overhead vs bin — all 3 run(s), shebangsy only (lower is better)"
     x-axis ["cpp/shebangsy.cpp", "go/shebangsy.go", "mojo/shebangsy.mojo", "nim/shebangsy.nim", "python/shebangsy.py", "rust/shebangsy.rs", "swift/shebangsy.swift"]
-    y-axis "overhead ms" 9 --> 13
-    bar [11.5, 10.9, 10.3, 11.1, 12.2, 10.7, 10.3]
+    y-axis "overhead ms" 10 --> 15
+    bar [10.5, 11.3, 11.3, 11.7, 13.8, 12.0, 10.9]
 ```
+
+## Language colors (legend)
+
+Series colors in the charts above follow **language** (first path segment). Use this table to map each language to its **named color** and **hex**.
+
+| Language | Color | Hex |
+| --- | --- | --- |
+| `cpp` | Blue | `#1d4ed8` |
+| `go` | Green | `#15803d` |
+| `mojo` | Amber | `#a16207` |
+| `nim` | Purple | `#7c3aed` |
+| `python` | Red | `#b91c1c` |
+| `rust` | Cyan | `#0e7490` |
+| `swift` | Indigo | `#4338ca` |
+| `other` | Slate | `#64748b` |
