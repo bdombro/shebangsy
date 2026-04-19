@@ -9,6 +9,19 @@ BIN="${ROOT_DIR}/dist/shebangsy"
 cd "${ROOT_DIR}"
 ./scripts/build.sh
 
+# SHEBANGSY_TEST_MODE: all (default) | no-swift | swift-only — used by CI (Linux vs macOS).
+RUN_NON_SWIFT=true
+RUN_SWIFT=true
+case "${SHEBANGSY_TEST_MODE:-all}" in
+  all) ;;
+  no-swift) RUN_SWIFT=false ;;
+  swift-only) RUN_NON_SWIFT=false ;;
+  *)
+    echo "test.sh: unknown SHEBANGSY_TEST_MODE=${SHEBANGSY_TEST_MODE:-}" >&2
+    exit 1
+    ;;
+esac
+
 fail() {
   echo "test.sh: $1" >&2
   exit 1
@@ -35,6 +48,7 @@ run_lang_test() {
 
 rm -rf "${HOME}/.cache/shebangsy"
 
+if [[ "${RUN_NON_SWIFT}" == true ]]; then
 if command -v nim >/dev/null 2>&1 && nim --version >/dev/null 2>&1; then
   run_lang_test nim ./examples/nim/hello.nim
 else
@@ -81,7 +95,9 @@ if command -v cargo >/dev/null 2>&1 && cargo --version >/dev/null 2>&1; then
 else
   echo "==> cargo missing; skipping Rust smoke test"
 fi
+fi
 
+if [[ "${RUN_SWIFT}" == true ]]; then
 if command -v swift >/dev/null 2>&1 && swift --version >/dev/null 2>&1 &&
   command -v swiftc >/dev/null 2>&1 && swiftc --version >/dev/null 2>&1; then
   run_lang_test swift ./examples/swift/hello.swift
@@ -97,6 +113,7 @@ if command -v swift >/dev/null 2>&1 && swift --version >/dev/null 2>&1 &&
   fi
 else
   echo "==> swift or swiftc missing; skipping Swift smoke tests"
+fi
 fi
 
 echo "test.sh: all enabled smoke tests passed"

@@ -17,7 +17,8 @@ Steps performed (normal invocation)
     5. Promote ``## [Unreleased]`` in ``CHANGELOG.md`` to ``## [<version>] - <date>``,
        insert a fresh empty ``## [Unreleased]``, refresh the reference-link footer
        (``[Unreleased]``, version compare URLs, Keep a Changelog / Semver links),
-       then ``git add`` / ``git commit`` and ``git push`` the current branch.
+       then ``git add -A`` (all changes and new files, respecting ``.gitignore``),
+       ``git commit``, and ``git push`` the current branch.
     6. Create an annotated git tag ``<version>`` with message
        ``shebangsy <version>``, force-push it to ``origin``, then run
        ``gh release create`` with those zips and ``--generate-notes``.
@@ -305,10 +306,10 @@ def promote_changelog(path: Path, version: str, repo: str, prev_tag: str | None)
     path.write_text(new_text, encoding="utf-8", newline="\n")
 
 
-def git_commit_changelog(root: Path, version: str) -> None:
-    """Stage ``CHANGELOG.md`` and create a release preparation commit."""
+def git_commit_release(root: Path, version: str) -> None:
+    """Stage all working-tree changes (including new files) and commit the release."""
     subprocess.run(
-        ["git", "add", CHANGELOG_FILENAME],
+        ["git", "add", "-A"],
         cwd=root,
         check=True,
     )
@@ -399,7 +400,7 @@ def main() -> None:
     if not changelog_path.is_file():
         die(f"missing {changelog_path}")
     promote_changelog(changelog_path, version, repo, prev_tag)
-    git_commit_changelog(root, version)
+    git_commit_release(root, version)
     git_push_current_branch(root)
     git_annotated_release_tag_add(version)
     subprocess.run(

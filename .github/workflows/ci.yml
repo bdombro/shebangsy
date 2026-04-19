@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Swift.org Linux toolchains + swift-driver break often on ubuntu-latest; run those smoke tests on macOS (Xcode Swift) instead.
+  test-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Nimble packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nimble/pkgs
+          key: ${{ runner.os }}-nimble-${{ hashFiles('shebangsy.nimble') }}
+
+      - name: Install Nim
+        uses: jiro4989/setup-nim-action@v2
+        with:
+          nim-version: "stable"
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+          cache: true
+
+      - name: Run tests (no Swift)
+        env:
+          SHEBANGSY_TEST_MODE: no-swift
+        run: ./scripts/test.sh
+
+  test-swift-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Nim
+        run: brew install nim
+
+      - name: Run tests (Swift only)
+        env:
+          SHEBANGSY_TEST_MODE: swift-only
+        run: ./scripts/test.sh
